@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "67753090159",
+    "project_id": "gestion-nutrition",
+    "storage_bucket": "gestion-nutrition.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:67753090159:android:c2c9c8e3f3b3458dd8c19a",
+        "android_client_info": {
+          "package_name": "com.example.nutrition_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB19Xa-r_wBB05-vC_ztoZcbqkUOxqsraI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
