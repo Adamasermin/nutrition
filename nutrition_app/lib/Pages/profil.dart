@@ -6,32 +6,35 @@ class Profil extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-
-        title: const Text(
-          'Profil',
-          style: TextStyle(color: Colors.black),
-        ),
-        centerTitle: true,
-        elevation: 0, 
-        shadowColor: Colors.white,
-      ),
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           Expanded(
-              flex: 2,
+              flex: 4,
               child: Container(
                 width: double.infinity,
                 color: Colors.white,
-                child: const Column(
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircleAvatar(
+                    // Aligner seulement le texte "Profil" à gauche avec un padding
+                  Container(
+                    alignment: Alignment.centerLeft, // Aligner à gauche
+                    padding: const EdgeInsets.only(left: 20, top: 50),
+                    child: const Text(
+                      'Profil',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20,),
+                    const CircleAvatar(
                       radius: 50,
                       backgroundImage: AssetImage('assets/images/Profil.png'),
                     ),
-                    Text(
+                    const Text(
                       'Adama SERMIN',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -39,7 +42,7 @@ class Profil extends StatelessWidget {
                   ],
                 ),
               )),
-          const SizedBox(height: 30,),
+          const SizedBox(height: 10,),
           Expanded(
             flex: 5,
             child: Container(
@@ -97,7 +100,7 @@ class Profil extends StatelessWidget {
             ),
           ),
           Expanded(
-            flex: 4,
+            flex: 3,
             child: Center(
               child: ElevatedButton(
                 onPressed: () {},

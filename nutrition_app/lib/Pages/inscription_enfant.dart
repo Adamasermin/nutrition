@@ -1,13 +1,89 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import 'package:nutrition_app/Models/enfant.dart';
+import 'package:nutrition_app/Services/enfant_service.dart';
 
 // ignore: camel_case_types, must_be_immutable
-class Inscription_enfant extends StatelessWidget {
-  
-
+class Inscription_enfant extends StatefulWidget {
   const Inscription_enfant({super.key});
 
-  
+  @override
+  State<Inscription_enfant> createState() => _Inscription_enfantState();
+}
+
+class _Inscription_enfantState extends State<Inscription_enfant> {
+  // Contrôleurs pour les champs du formulaire
+  final TextEditingController _nomPrenomController = TextEditingController();
+  final TextEditingController _dateNaissanceController = TextEditingController();
+  final TextEditingController _poidsController = TextEditingController();
+  final TextEditingController _tailleController = TextEditingController();
+
+  // Instance du service EnfantService
+  final EnfantService _enfantService = EnfantService();
+
+  // Fonction pour ajouter l'enfant dans Firestore via EnfantService
+  Future<void> ajouterEnfant() async {
+    // Récupérer l'utilisateur connecté
+    User? utilisateurConnecte = FirebaseAuth.instance.currentUser;
+
+    if (utilisateurConnecte == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Erreur : utilisateur non connecté.')),
+      );
+      return;
+    }
+
+    if (_nomPrenomController.text.isNotEmpty &&
+        _dateNaissanceController.text.isNotEmpty &&
+        _poidsController.text.isNotEmpty &&
+        _tailleController.text.isNotEmpty) {
+      try {
+        // Convertir les valeurs du poids et de la taille
+        double poids = double.parse(_poidsController.text);
+        double taille = double.parse(_tailleController.text) / 100; // Convertir en mètres
+
+        // Calculer l'IMC
+        double imc = poids / (taille * taille);
+
+        // Créer l'objet Enfant avec l'IMC calculé
+        Enfant enfant = Enfant(
+          nomPrenom: _nomPrenomController.text,
+          dateDeNaissance: DateTime.parse(_dateNaissanceController.text),
+          age: DateTime.now().year - DateTime.parse(_dateNaissanceController.text).year,
+          poids: poids,
+          taille: taille * 100, // Convertir à nouveau en centimètres
+          imc: imc,
+          userId: utilisateurConnecte.uid, // Ajouter l'ID de l'utilisateur ici
+        );
+
+        // Appeler le service pour ajouter l'enfant
+        await _enfantService.ajouterEnfant(enfant);
+
+        // Afficher un message de succès
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text('Données de l’enfant ajoutées avec succès')),
+        );
+
+        // Réinitialiser le formulaire
+        _nomPrenomController.clear();
+        _dateNaissanceController.clear();
+        _poidsController.clear();
+        _tailleController.clear();
+
+        // Rediriger vers la page d'accueil
+        Navigator.pushReplacementNamed(context, '/accueil');
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur lors de l\'ajout des données : $e')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +93,8 @@ class Inscription_enfant extends StatelessWidget {
         leading: IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(
-              Icons.arrow_back_ios_new_rounded, 
-              color: Colors.black, 
+              Icons.arrow_back_ios_new_rounded,
+              color: Colors.black,
               size: 20,
             )),
       ),
@@ -52,11 +128,14 @@ class Inscription_enfant extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Column(
                     children: [
-                      inputFile(label: 'Nom et Prenom'),
-                      inputFile(label: 'Date de naissance (YYYY-MM-DD)'),
-                      inputFile(label: 'Poids'),
-                      inputFile(label: 'Taille'),
-                      
+                      inputFile(
+                          label: 'Nom et Prenom',
+                          controller: _nomPrenomController),
+                      inputFile(
+                          label: 'Date de naissance (YYYY-MM-DD)',
+                          controller: _dateNaissanceController),
+                      inputFile(label: 'Poids', controller: _poidsController),
+                      inputFile(label: 'Taille', controller: _tailleController),
                     ],
                   ),
                 ),
@@ -73,7 +152,7 @@ class Inscription_enfant extends StatelessWidget {
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: ajouterEnfant,
                     child: const Text('Validez'),
                   ),
                 ),
@@ -86,7 +165,7 @@ class Inscription_enfant extends StatelessWidget {
   }
 }
 
-Widget inputFile({label, obscureText = false}) {
+Widget inputFile({label, obscureText = false, controller}) {
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: <Widget>[
@@ -99,6 +178,7 @@ Widget inputFile({label, obscureText = false}) {
         height: 5,
       ),
       TextField(
+        controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
             contentPadding:

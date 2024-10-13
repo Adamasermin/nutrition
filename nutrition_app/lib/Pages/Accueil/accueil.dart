@@ -1,58 +1,92 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrition_app/Pages/Accueil/Graphes/mongraph.dart';
-
-
+import 'package:nutrition_app/Services/enfant_service.dart'; // Importer le service enfant
+import 'package:nutrition_app/Models/enfant.dart'; // Importer le modèle enfant
 
 class Accueil extends StatefulWidget {
-  const Accueil({super.key});
+   final String? enfantId;  // Recevoir l'ID de l'enfant
+  const Accueil({super.key, this.enfantId,});
 
   @override
   State<Accueil> createState() => _AccueilState();
 }
 
 class _AccueilState extends State<Accueil> {
-  // Liste pour stocker les données hebdomadaires à afficher dans le graphique
-  List<double> donneHebdomadaire = [
-    12.2,
-    56.2,
-    32.1,
-    10.6,
-    20.8,
-    15.6,
-    25.8,
-  ];
+  User? userConnecte;
+  Enfant? enfant;
+  final EnfantService _enfantService = EnfantService();
+
+  @override
+  void initState() {
+    super.initState();
+    userConnecte = FirebaseAuth.instance.currentUser;
+
+    // Écoute les changements d'utilisateur
+    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+      setState(() {
+        userConnecte = user;
+      });
+    });
+
+    // Récupérer les données de l'enfant
+    recupererEnfant();
+  }
+  // Mettre à jour l'enfant lors du clic sur une carte
+  void mettreAJourEnfant(Enfant enfantSelectionne) {
+    setState(() {
+      enfant = enfantSelectionne;  // Mettre à jour l'état avec l'enfant sélectionné
+    });
+  }
+
+  // Méthode pour récupérer les données de l'enfant
+  Future<void> recupererEnfant() async {
+    if (userConnecte != null) {
+      try {
+        Enfant? enfantRecupere =
+            await _enfantService.recupererEnfantPourUtilisateur();
+        setState(() {
+          enfant = enfantRecupere; // Mise à jour des données de l'enfant
+        });
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Erreur lors de la récupération des données : $e')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    String userName = userConnecte?.displayName ??userConnecte?.email ??'Utilisateur anonyme';
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        // Assure que le contenu est bien affiché sans chevauchement avec les bords de l'écran
         child: Column(
           children: [
-            SingleChildScrollView(
-                child: Expanded(
+            Expanded(
               flex: 1,
               child: Container(
-                margin: const EdgeInsets.only(top: 40, bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: Column(
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
+                            const Text(
                               'Salut!!!',
                               style: TextStyle(color: Colors.black),
                             ),
                             Text(
-                              'userName', // Utiliser le nom de l'utilisateur récupéré
-                              style:
-                                  TextStyle(fontSize: 20, color: Colors.black),
+                              userName,
+                              style: const TextStyle(
+                                  fontSize: 20, color: Colors.black),
                             ),
                           ],
                         ),
@@ -74,24 +108,25 @@ class _AccueilState extends State<Accueil> {
                       ),
                       child: const TextField(
                         decoration: InputDecoration(
-                            hintText: 'Search',
-                            hintStyle: TextStyle(
-                                color: Color.fromARGB(175, 149, 148, 148)),
-                            prefixIcon: Icon(
-                              Icons.search,
-                              size: 25,
-                              color: Color.fromARGB(175, 149, 148, 148),
-                            ),
-                            border: InputBorder.none),
+                          hintText: 'Search',
+                          hintStyle: TextStyle(
+                              color: Color.fromARGB(175, 149, 148, 148)),
+                          prefixIcon: Icon(
+                            Icons.search,
+                            size: 25,
+                            color: Color.fromARGB(175, 149, 148, 148),
+                          ),
+                          border: InputBorder.none,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-            )),
+            ),
             Expanded(
-              flex: 2,
-              child: DonneeEnfant(donneHebdomadaire: donneHebdomadaire),
+              flex: 4,
+              child: DonneeEnfant(enfant: enfant),
             ),
           ],
         ),
@@ -100,40 +135,42 @@ class _AccueilState extends State<Accueil> {
   }
 }
 
-
+// Widget pour afficher les données de l'enfant
 class DonneeEnfant extends StatelessWidget {
+  final Enfant? enfant;
+
   const DonneeEnfant({
     super.key,
-    required this.donneHebdomadaire,
+    required this.enfant,
   });
-
-  final List<double> donneHebdomadaire;
 
   @override
   Widget build(BuildContext context) {
+    if (enfant == null) {
+      return const Center(child: Text('Aucun enfant trouvé.'));
+    }
+
     return Container(
       margin: const EdgeInsets.only(top: 20),
       child: Column(
         children: [
-          const Column(
+          Column(
             children: [
-              Text('Données enfant : Salwa SERMIN'),
-              SizedBox(
-                height: 20,
-              ),
+              Text('Données enfant : ${enfant!.nomPrenom}'),
+              const SizedBox(height: 20),
               Row(
                 children: [
-                  // Affichage du poids
                   Expanded(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '25 kg', // Affichage du poids
-                          style: TextStyle(fontSize: 20, color: Colors.black),
+                          '${enfant!.poids} kg',
+                          style: const TextStyle(
+                              fontSize: 20, color: Colors.black),
                         ),
-                        Text(
-                          'Poids', // Étiquette du poids
+                        const Text(
+                          'Poids',
                           style: TextStyle(
                               fontSize: 14,
                               color: Color.fromARGB(179, 107, 105, 105)),
@@ -141,17 +178,17 @@ class DonneeEnfant extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Affichage de la taille
                   Expanded(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '123 cm', // Affichage de la taille
-                          style: TextStyle(fontSize: 20, color: Colors.black),
+                          '${enfant!.taille} cm',
+                          style: const TextStyle(
+                              fontSize: 20, color: Colors.black),
                         ),
-                        Text(
-                          'Taille', // Étiquette de la taille
+                        const Text(
+                          'Taille',
                           style: TextStyle(
                               fontSize: 14,
                               color: Color.fromARGB(179, 107, 105, 105)),
@@ -159,17 +196,17 @@ class DonneeEnfant extends StatelessWidget {
                       ],
                     ),
                   ),
-                  // Affichage de l'IMC
                   Expanded(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          '123',
-                          style: TextStyle(fontSize: 20, color: Colors.black),
+                          '${enfant!.imc?.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                              fontSize: 20, color: Colors.black),
                         ),
-                        Text(
-                          'IMC', // Étiquette de l'IMC
+                        const Text(
+                          'IMC',
                           style: TextStyle(
                               fontSize: 14,
                               color: Color.fromARGB(179, 107, 105, 105)),
@@ -182,7 +219,16 @@ class DonneeEnfant extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          Expanded(child: Mongraph(donneHebdomadaire: donneHebdomadaire)),
+          const Expanded(
+              child: Mongraph(donneHebdomadaire: [
+            12.2,
+            56.2,
+            32.1,
+            10.6,
+            20.8,
+            15.6,
+            25.8
+          ])),
           const Expanded(
             flex: 2,
             child: RecetteFavoris(),
@@ -192,7 +238,6 @@ class DonneeEnfant extends StatelessWidget {
     );
   }
 }
-
 
 class RecetteFavoris extends StatelessWidget {
   const RecetteFavoris({
@@ -212,18 +257,17 @@ class RecetteFavoris extends StatelessWidget {
             'Favoris', // Titre de la section
             style: TextStyle(fontSize: 20, color: Colors.black),
           ),
-          const SizedBox(
-              height: 20), // Espace de 20 pixels sous le titre
+          const SizedBox(height: 20), // Espace de 20 pixels sous le titre
           SingleChildScrollView(
-            scrollDirection: Axis.horizontal, // Permet de faire défiler horizontalement
+            scrollDirection:
+                Axis.horizontal, // Permet de faire défiler horizontalement
             child: Row(
               children: [
                 // Première carte
                 Card(
                   elevation: 8, // Élévation de la carte pour l'ombre
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(10), // Coins arrondis
+                    borderRadius: BorderRadius.circular(10), // Coins arrondis
                   ),
                   child: Column(children: [
                     Image.asset(
@@ -236,8 +280,7 @@ class RecetteFavoris extends StatelessWidget {
                 Card(
                   elevation: 8, // Élévation de la carte pour l'ombre
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(10), // Coins arrondis
+                    borderRadius: BorderRadius.circular(10), // Coins arrondis
                   ),
                   child: Column(children: [
                     Image.asset(
@@ -250,8 +293,7 @@ class RecetteFavoris extends StatelessWidget {
                 Card(
                   elevation: 8, // Élévation de la carte pour l'ombre
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(10), // Coins arrondis
+                    borderRadius: BorderRadius.circular(10), // Coins arrondis
                   ),
                   child: Column(children: [
                     Image.asset(

@@ -11,7 +11,8 @@ class FirebaseAuthService {
     try {
 
       UserCredential credential = await _auth.createUserWithEmailAndPassword(email: email, password: motDePassse);
-      return credential.user;
+      User? user = credential.user;
+      return user;
 
     } catch (e) {
 

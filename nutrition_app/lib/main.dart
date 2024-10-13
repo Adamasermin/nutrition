@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nutrition_app/Pages/Accueil/accueil.dart';
 import 'package:nutrition_app/Pages/connexion.dart';
 import 'package:nutrition_app/Pages/enfant.dart';
 import 'package:nutrition_app/Pages/inscription.dart';
@@ -13,11 +12,13 @@ import 'package:nutrition_app/Pages/splash.dart';
 import 'package:nutrition_app/Pages/splash2.dart';
 import 'package:nutrition_app/Pages/welcome.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:nutrition_app/Widgets/bar_de_navigation.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
+  
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
 );
@@ -43,6 +44,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
 
+      // home: Profil(),
+
       routes: {
         '/': (context) => const Splash(),
         '/welcome': (context) => const Welcome(),
@@ -51,11 +54,11 @@ class MyApp extends StatelessWidget {
         '/splash2': (context) => const Splash2(),
         '/inscription-enfant': (context) => const Inscription_enfant(),
         '/notification': (context) => const Notification_page(),
-        '/accueil': (context) => const Accueil(),
+        '/accueil': (context) => const BarDeNavigation(),
         '/profil': (context) => const Profil(),
         '/nutritioniste': (context) => const Nutritioniste(),
         '/recette': (context) => const Recette(),
-        '/enfant': (context) => const Enfant(),
+        '/enfant': (context) => const EnfantPage(),
       },
     );
   }

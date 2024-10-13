@@ -7,19 +7,20 @@ class Recette extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: const Text(
-          'Recette',
-          style: TextStyle(color: Colors.black),
-        ),
-        centerTitle: true,
-        elevation: 0,
-        shadowColor: Colors.white,
-      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
+            Container(
+              alignment: Alignment.centerLeft, // Aligner à gauche
+              padding: const EdgeInsets.only(left: 20, top: 50),
+              child: const Text(
+                'Recette',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
               decoration: BoxDecoration(
