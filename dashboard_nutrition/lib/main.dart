@@ -1,4 +1,4 @@
-import 'package:dashboard_nutrition/Pages/accueilPage.dart';
+import 'package:dashboard_nutrition/Widgets/side_menu_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
-      home:  const AccueilPage()
+      home:  const SideMenuWidget()
     );
   }
 }

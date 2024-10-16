@@ -1,4 +1,6 @@
 import 'package:dashboard_nutrition/Data/card_data.dart';
+import 'package:dashboard_nutrition/Widgets/bar_de_recherche_widget.dart';
+import 'package:dashboard_nutrition/Widgets/bar_graphique_widget.dart';
 import 'package:flutter/material.dart';
 
 class ContenuWidget extends StatelessWidget {
@@ -6,9 +8,9 @@ class ContenuWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
-        const BarDeRecherche(),
+        BarDeRechercheWidget(),
         Expanded(
             flex: 10,
             child: Row(
@@ -17,19 +19,29 @@ class ContenuWidget extends StatelessWidget {
                     flex: 8,
                     child: Column(
                       children: [
-                        const HeaderWidget(),
-                        Expanded(
-                            flex: 4,
-                            child: Container(
-                              color: Colors.black,
-                            )),
+                        HeaderWidget(),
+                        Graphique_widget(),
                       ],
                     )),
-                const Expanded(flex: 3, child: Utilisateur())
+                Expanded(flex: 3, child: Utilisateur())
               ],
             )),
       ],
     );
+  }
+}
+
+// ignore: camel_case_types
+class Graphique_widget extends StatelessWidget {
+  const Graphique_widget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return const Expanded(
+        flex: 4,
+        child: BarGraphiqueWidget());
   }
 }
 
@@ -41,36 +53,33 @@ class Utilisateur extends StatelessWidget {
     final cardData = CardData();
 
     return Container(
-      padding: const EdgeInsets.all(20), // Ajoutez du padding si nécessaire
-      // width: double.infinity,
+      padding: const EdgeInsets.all(20),
       child: Column(
         children: [
           GridView.builder(
             itemCount: cardData.card.length,
-            physics:
-                const NeverScrollableScrollPhysics(), // Désactive le défilement
+            physics: const NeverScrollableScrollPhysics(), 
             shrinkWrap: true, // Ajuste la taille du GridView à son contenu
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount:1, // Ajustez le nombre de colonnes selon vos besoins
+              crossAxisCount: 1, // Ajustez le nombre de colonnes selon vos besoins
               crossAxisSpacing: 15, // Ajuste l'espacement horizontal
               mainAxisSpacing: 15, // Ajuste l'espacement vertical
               childAspectRatio: 1.6, // Ajuste le ratio de chaque élément (plus large)
             ),
             itemBuilder: (context, index) {
               final List<Color> colors = [
-                const Color.fromARGB(172, 8, 144, 178),
-                const Color.fromARGB(172, 90, 33, 182),
-                const Color.fromARGB(172, 247, 166, 61),
+                const Color.fromARGB(242, 8, 144, 178),
+                const Color.fromARGB(242, 90, 33, 182),
+                const Color.fromARGB(242, 247, 166, 61),
               ];
               return Container(
                 margin: const EdgeInsets.all(10),
-                padding: const EdgeInsets.only(top:10),
+                padding: const EdgeInsets.only(top: 10),
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.all(Radius.circular(8.0)),
                   color: colors[index % colors.length],
                 ),
                 child: Row(
-                  // mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
@@ -78,11 +87,13 @@ class Utilisateur extends StatelessWidget {
                       width: MediaQuery.of(context).size.width * 0.03,
                       height: MediaQuery.of(context).size.height * 0.06,
                       decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.all(Radius.circular(8)),
-                        border: Border.all(
-                          color: Colors.black, // Couleur de la bordure
-                          width:0.5, // Épaisseur de la bordure
-                        ),
+                        borderRadius:
+                          const BorderRadius.all(Radius.circular(8)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2), // Couleur de l'ombre
+                            ),
+                          ],
                       ),
                       child: const Center(
                         child: Icon(Icons.person),
@@ -90,8 +101,10 @@ class Utilisateur extends StatelessWidget {
                     ),
                     Column(
                       children: [
-                        Text(cardData.card[index].titre, style: const TextStyle(fontSize: 16)),
-                        Text(cardData.card[index].nombre, style: const TextStyle(fontSize: 14)),
+                        Text(cardData.card[index].titre,
+                            style: const TextStyle(fontSize: 16)),
+                        Text(cardData.card[index].nombre,
+                            style: const TextStyle(fontSize: 14)),
                       ],
                     )
                   ],
@@ -157,65 +170,3 @@ class HeaderWidget extends StatelessWidget {
   }
 }
 
-class BarDeRecherche extends StatelessWidget {
-  const BarDeRecherche({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-        flex: 1,
-        child: Row(
-          children: [
-            Expanded(
-                flex: 6,
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10, left: 20),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Salut!!!',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      Text('Bienvenue'),
-                    ],
-                  ),
-                )),
-            Expanded(
-              flex: 9,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search',
-                    hintStyle:
-                        TextStyle(color: Color.fromARGB(175, 149, 148, 148)),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      size: 25,
-                      color: Color.fromARGB(175, 149, 148, 148),
-                    ),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-            ),
-            Expanded(
-              flex: 1,
-              child: InkWell(
-                onTap: () => Navigator.pushNamed(context, '/notification'),
-                child: const Icon(
-                  Icons.notifications,
-                  color: Color.fromARGB(255, 98, 98, 98),
-                ),
-              ),
-            ),
-          ],
-        ));
-  }
-}
