@@ -1,4 +1,5 @@
 
+import 'package:dashboard_nutrition/Widgets/graphique.dart';
 import 'package:flutter/material.dart';
 
 class BarGraphiqueWidget extends StatelessWidget {
@@ -16,12 +17,22 @@ class BarGraphiqueWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('imc moyens des enfants',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),),
-              SizedBox(height: 20,),
+              Expanded(
+                flex: 1,
+                child: Text(
+                  'imc moyens des enfants',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+              ),
+              // SizedBox(height: 20,),
+              Expanded(
+                flex: 7,
+                child: Graphique()
+              )
             ],
           ),
         )
     );
   }
 }
+

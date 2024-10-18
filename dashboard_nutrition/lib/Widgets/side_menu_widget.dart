@@ -7,6 +7,7 @@ import 'package:dashboard_nutrition/Pages/nutritionistePage.dart';
 import 'package:dashboard_nutrition/Pages/parentPage.dart';
 import 'package:dashboard_nutrition/Pages/profilPage.dart';
 import 'package:dashboard_nutrition/Pages/recettePage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -19,6 +20,17 @@ class SideMenuWidget extends StatefulWidget {
 
 class _SideMenuWidgetState extends State<SideMenuWidget> {
   int _currentIndex = 0;
+  FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> deconnexion() async {
+    try {
+      await _auth.signOut();
+      Navigator.of(context).pushReplacementNamed('/');
+      print('Déconnexion réussie');
+    } catch (e) {
+      print('Erreur lors de la déconnexion : $e');
+    }
+  }
 
   final List<Widget> _pages = [
     const AccueilPage(),
@@ -30,6 +42,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     const Profilpage()
   ];
 
+
   @override
   Widget build(BuildContext context) {
     final data = SideMenuData();
@@ -37,78 +50,75 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     return Scaffold(
       backgroundColor: bgCouleur,
       body: SafeArea(
-          child: Row(
-        children: [
-          Expanded(
+        child: Row(
+          children: [
+            Expanded(
               flex: 2,
               child: SizedBox(
-                  child: Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 81, 80, 85), // Couleur de départ
-                      Color.fromARGB(255, 64, 64, 64), // Couleur de fin
-                    ],
-                    begin: Alignment.bottomCenter, // Début du dégradé
-                    end: Alignment.topCenter, // Fin du dégradé
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(150, 81, 80, 85),
+                        Color.fromARGB(150, 64, 64, 64),
+                      ],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
                   ),
-                ),
-                child: Column(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Image.asset(
-                        'assets/images/Logo.png',
-                        height: MediaQuery.of(context).size.height * 0.08,
-                        width: MediaQuery.of(context).size.width * 0.08,
+                  child: Column(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Image.asset(
+                          'assets/images/Logo.png',
+                          height: MediaQuery.of(context).size.height * 0.08,
+                          width: MediaQuery.of(context).size.width * 0.08,
+                        ),
                       ),
-                    ),
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                        child: ListView.builder(
+                      Expanded(
+                        flex: 5,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          child: ListView.builder(
                             itemCount: data.menu.length,
-                            itemBuilder: (context, index) =>
-                                buildMenuEntry(data, index)),
+                            itemBuilder: (context, index) => buildMenuEntry(data, index),
+                          ),
+                        ),
                       ),
-                    ),
-                    Expanded(
+                      Expanded(
                         flex: 2,
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 20),
-                              child: Row(
+                              margin: const EdgeInsets.symmetric(horizontal: 20),
+                              child: const Row(
                                 children: [
-                                  SizedBox(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.04,
-                                    child: const CircleAvatar(
-                                      radius: 20,
-                                      backgroundImage: AssetImage(
-                                          'assets/images/profil.jpg'),
-                                    ),
+                                  CircleAvatar(
+                                    radius: 25,
+                                    backgroundImage: AssetImage('assets/images/profil.jpg'),
                                   ),
-                                  const Text(
+                                  SizedBox(width: 10),
+                                  Text(
                                     "Adama SERMIN",
                                     style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white),
-                                  )
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
                             const SizedBox(height: 15),
                             Container(
                               width: double.infinity,
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 20),
+                              margin: const EdgeInsets.symmetric(horizontal: 20),
                               child: ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  _showLogoutConfirmationDialog(context); // Appel de la fonction de popup
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFD9D9D9),
                                   foregroundColor: Colors.white,
@@ -128,26 +138,59 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                                     SizedBox(width: 8),
                                     Text(
                                       'Deconnexion',
-                                      style: TextStyle(
-                                          fontSize: 16, color: Colors.black),
+                                      style: TextStyle(fontSize: 16, color: Colors.black),
                                     ),
                                   ],
                                 ),
                               ),
                             )
                           ],
-                        ))
-                  ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ))),
-          Expanded(
+              ),
+            ),
+            Expanded(
               flex: 9,
               child: IndexedStack(
                 index: _currentIndex,
                 children: _pages,
-              )),
-        ],
-      )),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Fonction pour afficher le popup de confirmation
+  void _showLogoutConfirmationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Confirmation"),
+          content: const Text("Voulez-vous vraiment vous déconnecter ?"),
+          actions: [
+            TextButton(
+              child: const Text("Annuler"),
+              onPressed: () {
+                Navigator.of(context).pop(); // Fermer le popup
+              },
+            ),
+            TextButton(
+              child: const Text("Confirmer"),
+              onPressed: () async {
+                Navigator.of(context).pop(); // Fermer le popup
+                await deconnexion(); // Appel de la fonction de déconnexion
+                 // Rediriger vers la page de connexion
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -157,8 +200,9 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-          color: isSelected ? couleurPrimaire : Colors.transparent,
-          borderRadius: const BorderRadius.all(Radius.circular(5))),
+        color: isSelected ? couleurPrimaire : Colors.transparent,
+        borderRadius: const BorderRadius.all(Radius.circular(5)),
+      ),
       child: InkWell(
         onTap: () => setState(() {
           _currentIndex = index;
@@ -175,10 +219,11 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
             Text(
               data.menu[index].titre,
               style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.white,
-                  fontSize: 16,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal),
-            )
+                color: isSelected ? Colors.white : Colors.white,
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
           ],
         ),
       ),

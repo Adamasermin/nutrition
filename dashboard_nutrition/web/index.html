@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -27,12 +28,39 @@
   <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>dashboard_nutrition</title>
   <link rel="manifest" href="manifest.json">
+
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "firebase/app";
+    import { getAnalytics } from "firebase/analytics";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyATvebU3IGPEtIMbRoirT6bsBwgfeKxeuA",
+      authDomain: "gestion-nutrition.firebaseapp.com",
+      projectId: "gestion-nutrition",
+      storageBucket: "gestion-nutrition.appspot.com",
+      messagingSenderId: "67753090159",
+      appId: "1:67753090159:web:334141ceb57efeafd8c19a",
+      measurementId: "G-2NCG9W0RF3"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
 </head>
+
 <body>
   <script src="flutter_bootstrap.js" async></script>
+  
 </body>
+
 </html>
