@@ -1,4 +1,5 @@
 import 'package:dashboard_nutrition/Models/nutritioniste.dart';
+import 'package:dashboard_nutrition/Services/nutritioniste_service.dart';
 import 'package:dashboard_nutrition/Widgets/bar_de_recherche_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -11,12 +12,7 @@ class Nutritionistepage extends StatefulWidget {
 
 class _NutritionistepageState extends State<Nutritionistepage> {
 
-  final List<Nutritioniste> nutritionistes = [
-      Nutritioniste(id: 'id1', nomPrenom: 'nomPrenom', email: 'email', password: 'password', telephone: 'telephone', photo: 'photo'),
-      Nutritioniste(id: 'id2', nomPrenom: 'nomPrenom', email: 'email', password: 'password', telephone: 'telephone', photo: 'photo'),
-      Nutritioniste(id: 'id3', nomPrenom: 'nomPrenom', email: 'email', password: 'password', telephone: 'telephone', photo: 'photo'),
-      Nutritioniste(id: 'id4', nomPrenom: 'nomPrenom', email: 'email', password: 'password', telephone: 'telephone', photo: 'photo'),
-    ];
+  final NutritionisteService _nutritionisteService = NutritionisteService();
 
   // Fonction pour ouvrir le formulaire dans un popup
   Future<void> _openFormPopup({Nutritioniste? nutritioniste}) async {
@@ -67,28 +63,29 @@ class _NutritionistepageState extends State<Nutritionistepage> {
             ),
             TextButton(
               child: const Text("Enregistrer"),
-              onPressed: () {
-                // Logique d'ajout ou de modification de l'enfant ici
+              onPressed: () async {
+                // Logique d'ajout ou de modification
                 if (nutritioniste == null) {
-                  // Ajouter un nouvel enfant
-                  setState(() {
-                    nutritionistes.add(Nutritioniste(
-                      id: 'E00${nutritionistes.length + 1}',
+                  await _nutritionisteService.ajouterNutri(Nutritioniste(
+                      id: '', // Firebase génère l'ID
                       nomPrenom: nomPrenomController.text,
                       email: emailController.text,
                       password: passwordController.text,
                       telephone: telephoneController.text,
                       photo: photoController.text
-                    ));
-                  });
+                      ));
                 } else {
-                  // Modifier l'enfant existant
-                  setState(() {
-                    // enfant.nomPrenom = nomPrenomController.text;
-                    // enfant.taille = tailleController.text;
-                    // enfant.poids = poidsController.text;
-                    // enfant.imc = imcController.text;
-                  });
+                  await _nutritionisteService.modifierNutri(
+                    nutritioniste.id!,
+                    Nutritioniste(
+                        id: nutritioniste.id,
+                        nomPrenom: nomPrenomController.text,
+                        email: emailController.text,
+                        password: passwordController.text,
+                        telephone: telephoneController.text,
+                        photo: photoController.text
+                    ),
+                  );
                 }
                 Navigator.of(context).pop();
               },
@@ -116,10 +113,8 @@ class _NutritionistepageState extends State<Nutritionistepage> {
             ),
             TextButton(
               child: const Text("Supprimer"),
-              onPressed: () {
-                setState(() {
-                  nutritionistes.remove(nutritioniste);
-                });
+              onPressed: () async {
+                await _nutritionisteService.supprimerNutri(nutritioniste.id!);
                 Navigator.of(context).pop();
               },
             ),
@@ -134,17 +129,14 @@ class _NutritionistepageState extends State<Nutritionistepage> {
 
     return Column(
       children: [
-        const Expanded(
-          flex:1, 
-          child: BarDeRechercheWidget()
-        ),
         Expanded(
           flex: 10,
           child: Column(
             children: [
               // Titre + Bouton Ajouter
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -160,10 +152,14 @@ class _NutritionistepageState extends State<Nutritionistepage> {
                         _openFormPopup();
                       },
                       icon: const Icon(Icons.add, color: Colors.white),
-                      label: const Text('Ajouter', style: TextStyle(color: Colors.white),),
+                      label: const Text(
+                        'Ajouter',
+                        style: TextStyle(color: Colors.white),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
                       ),
                     ),
                   ],
@@ -171,51 +167,100 @@ class _NutritionistepageState extends State<Nutritionistepage> {
               ),
               Expanded(
                 flex: 10,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8,
-                    height: MediaQuery.of(context).size.height * 1,
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('ID')),
-                        DataColumn(label: Text('Nom et Prenom')),
-                        DataColumn(label: Text('Email')),
-                        DataColumn(label: Text('Password')),
-                        DataColumn(label: Text('Telephone')),
-                        DataColumn(label: Text('Photo')),
-                        DataColumn(label: Text('Action')),
-                      ],
-                      rows: nutritionistes.map((nutritionistes) {
-                        return DataRow(cells: [
-                          DataCell(Text(nutritionistes.id)),
-                          DataCell(Text(nutritionistes.nomPrenom)),
-                          DataCell(Text(nutritionistes.email)),
-                          DataCell(Text(nutritionistes.password)),
-                          DataCell(Text(nutritionistes.telephone)),
-                          DataCell(Text(nutritionistes.photo)),
-                          DataCell(
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  onPressed: () {
-                                    _openFormPopup();
-                                  },
+                child: StreamBuilder<List<Nutritioniste>>(
+                  stream: _nutritionisteService.getNutritionistes(),
+                  builder: (BuildContext context, AsyncSnapshot<List<Nutritioniste>> snapshot) {
+                    if (snapshot.hasError) {
+                      return const Center(
+                          child: Text('Erreur lors du chargement des nutritionistes.'));
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final nutritionistes = snapshot.data ?? [];
+
+                    return Column(
+                      children: [
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.5,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const TextField(
+                              decoration: InputDecoration(
+                                hintText: 'Search',
+                                hintStyle: TextStyle(
+                                    color: Color.fromARGB(175, 149, 148, 148)),
+                                prefixIcon: Icon(
+                                  Icons.search,
+                                  size: 25,
+                                  color: Color.fromARGB(175, 149, 148, 148),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed: () {
-                                    _showDeleteConfirmationDialog(nutritionistes);
-                                  },
-                                ),
-                              ],
+                                border: InputBorder.none,
+                              ),
                             ),
                           ),
-                        ]);
-                      }).toList(),
-                    ),
-                  ),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Expanded(
+                          flex: 10,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.8,
+                              height: MediaQuery.of(context).size.height * 1,
+                              child: DataTable(
+                                columns: const [
+                                  DataColumn(label: Text('ID')),
+                                  DataColumn(label: Text('Nom et Prenom')),
+                                  DataColumn(label: Text('Email')),
+                                  DataColumn(label: Text('Telephone')),
+                                  DataColumn(label: Text('Actions')),
+                                ],
+                                rows: List<DataRow>.generate(nutritionistes.length,(index) {
+                                  final nutritioniste = nutritionistes[index];
+
+                                  return DataRow(cells: [
+                                    DataCell(Text((index + 1).toString())),
+                                    DataCell(Text(nutritioniste.nomPrenom)),
+                                    DataCell(Text(nutritioniste.email)),
+                                    DataCell(Text(nutritioniste.telephone)),
+                                    DataCell(
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit,
+                                                color: Colors.blue),
+                                            onPressed: () {
+                                              _openFormPopup();
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete,
+                                                color: Colors.red),
+                                            onPressed: () {
+                                              _showDeleteConfirmationDialog(
+                                                  nutritioniste);
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ]);
+                                }),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    );
+                  },
                 ),
               ),
             ],

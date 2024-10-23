@@ -109,7 +109,6 @@ class Profilpage extends StatelessWidget {
                                 style: TextStyle(fontSize: 16),
                               ),
                             ),
-                            // const SizedBox(height: 15),
                           ],
                         ),
                       ),

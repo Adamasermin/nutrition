@@ -28,87 +28,105 @@ class _ConnexionpageState extends State<Connexionpage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: couleurPrimaire,
-      body: Center(
-        child: Container(
-          padding:const EdgeInsets.all(20),
-          width: MediaQuery.of(context).size.width * 0.5,
-          height: MediaQuery.of(context).size.height * 0.6,
-          decoration: BoxDecoration(
-            color: Colors.white, // Couleur de fond du container
-            borderRadius: BorderRadius.circular(10), // Coins arrondis
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black
-                    .withOpacity(0.2), // Couleur et opacité de l'ombre
-                spreadRadius:
-                    2, // Taille de l'ombre (plus elle est grande, plus l'ombre se diffuse)
-                blurRadius: 10, // Flou de l'ombre
-                offset: const Offset(0, 5), // Décalage de l'ombre (X, Y)
+      body: Row(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Container(
+              decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/image-connexion.jpg'),
+                fit: BoxFit.cover,
               ),
-            ],
+            ),
+            )
           ),
-          child: Center(
-            child: Column(
-              children: [
-                const Expanded(
-                    flex: 2,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Connectez-vous au compte',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        Text(
-                          'Veuillez entrer votre email et votre mot de passe pour continuer',
-                          style: TextStyle(fontSize: 13),
-                        ),
-                      ],
-                    )),
-                Expanded(
-                  flex: 6,
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Container(
+                padding:const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+                width: MediaQuery.of(context).size.width * 0.3,
+                height: MediaQuery.of(context).size.height * 0.6,
+                decoration: BoxDecoration(
+                  color: Colors.white, 
+                  borderRadius: BorderRadius.circular(10), 
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black
+                          .withOpacity(0.2), 
+                      spreadRadius:
+                          2, // Taille de l'ombre (plus elle est grande, plus l'ombre se diffuse)
+                      blurRadius: 10, // Flou de l'ombre
+                      offset: const Offset(0, 5), // Décalage de l'ombre (X, Y)
+                    ),
+                  ],
+                ),
+                child: Center(
                   child: Column(
                     children: [
-                      // Champ de texte pour l'adresse e-mail
-                      inputFile(
-                        label: 'Email', 
-                        controller: _emailController
+                      Expanded(
+                          flex: 3,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.09,
+                                height: MediaQuery.of(context).size.height * 0.09,
+                                child: Image.asset('assets/images/Logo.png')
+                              ),
+                              const Text(
+                                'Connectez-vous au compte',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ],
+                          )),
+                      Expanded(
+                        flex: 6,
+                        child: Column(
+                          children: [
+                            // Champ de texte pour l'adresse e-mail
+                            inputFile(
+                              label: 'Email', 
+                              controller: _emailController
+                            ),
+                            // Champ de texte pour le mot de passe
+                            inputFile(
+                              label: 'Mot de passe',
+                              obscureText: true,
+                              controller: _motDePasseController
+                            ),
+                          ],
+                        ),
                       ),
-                      // Champ de texte pour le mot de passe
-                      inputFile(
-                        label: 'Mot de passe',
-                        obscureText: true,
-                        controller: _motDePasseController
-                      ),
+                      Expanded(
+                        flex: 1, 
+                        child: Center(
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.2,
+                          child: ElevatedButton(
+                            // Appel de la méthode de connexion lors de la soumission
+                            onPressed: _connexion,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFF7A73D), 
+                              foregroundColor: Colors.white, 
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5), 
+                              ),
+                            ),
+                            child: const Text(
+                              'Connectez-vous',
+                            ),
+                          ),
+                        ),
+                      ),)
                     ],
                   ),
                 ),
-                Expanded(
-                  flex: 1, 
-                  child: Center(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.2,
-                    child: ElevatedButton(
-                      // Appel de la méthode de connexion lors de la soumission
-                      onPressed: _connexion,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF7A73D), // Couleur de fond du bouton
-                        foregroundColor: Colors.white, // Couleur du texte du bouton
-                        // minimumSize: const Size(300.0, 50.0), // Taille minimale du bouton
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5), // Coins arrondis du bouton
-                        ),
-                      ),
-                      child: const Text(
-                        'Connectez-vous', // Texte du bouton
-                      ),
-                    ),
-                  ),
-                ),)
-              ],
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -130,9 +148,6 @@ class _ConnexionpageState extends State<Connexionpage> {
     }
   }
 }
-
-
-
 
 Widget inputFile({label, obscureText = false, controller}) {
   return Column(

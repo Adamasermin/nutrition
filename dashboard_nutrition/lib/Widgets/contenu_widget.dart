@@ -141,13 +141,8 @@ class HeaderWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Planifiez votre régime alimentaire cette semaine',
+              'Découvrez des recettes locales adaptées à votre enfant',
               style: TextStyle(fontSize: 24, color: Colors.white),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Lorem ipsum dolor sit amet, consectetur adipisicing elit.',
-              style: TextStyle(fontSize: 15, color: Color.fromARGB(168, 255, 255, 255)),
             ),
           ],
         ),

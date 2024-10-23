@@ -1,5 +1,5 @@
 import 'package:dashboard_nutrition/Models/enfant.dart';
-import 'package:dashboard_nutrition/Widgets/bar_de_recherche_widget.dart';
+import 'package:dashboard_nutrition/Services/enfant_service.dart';
 import 'package:flutter/material.dart';
 
 class Enfantpage extends StatefulWidget {
@@ -10,43 +10,25 @@ class Enfantpage extends StatefulWidget {
 }
 
 class _EnfantpageState extends State<Enfantpage> {
-
-  final List<Enfant> enfants = [
-      Enfant(
-          id: 'E001',
-          nomPrenom: 'Adama SERMIN',
-          dateDeNaissance: DateTime(2016, 1, 15),
-          taille: '145',
-          poids: '12',
-          imc: '45'),
-      Enfant(
-          id: 'E002',
-          nomPrenom: 'Sophie Brown',
-          dateDeNaissance: DateTime(2016, 2, 25),
-          taille: '140',
-          poids: '13',
-          imc: '42'),
-      Enfant(
-          id: 'E003',
-          nomPrenom: 'John Carter',
-          dateDeNaissance: DateTime(2016, 3, 12),
-          taille: '150',
-          poids: '14',
-          imc: '46'),
-    ];
+  final EnfantService _enfantService = EnfantService();
 
   // Fonction pour ouvrir le formulaire dans un popup
   Future<void> _openFormPopup({Enfant? enfant}) async {
-    final TextEditingController nomPrenomController = TextEditingController(text: enfant?.nomPrenom ?? '');
-    final TextEditingController tailleController = TextEditingController(text: enfant?.taille ?? '');
-    final TextEditingController poidsController = TextEditingController(text: enfant?.poids ?? '');
-    final TextEditingController imcController = TextEditingController(text: enfant?.imc ?? '');
+    final TextEditingController nomPrenomController =
+        TextEditingController(text: enfant?.nomPrenom ?? '');
+    final TextEditingController tailleController =
+        TextEditingController(text: enfant?.taille.toString() ?? '');
+    final TextEditingController poidsController =
+        TextEditingController(text: enfant?.poids.toString() ?? '');
+    final TextEditingController imcController =
+        TextEditingController(text: enfant?.imc?.toString() ?? '');
 
     await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(enfant == null ? 'Ajouter un enfant' : 'Modifier un enfant'),
+          title:
+              Text(enfant == null ? 'Ajouter un enfant' : 'Modifier un enfant'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -82,28 +64,33 @@ class _EnfantpageState extends State<Enfantpage> {
             ),
             TextButton(
               child: const Text("Enregistrer"),
-              onPressed: () {
-                // Logique d'ajout ou de modification de l'enfant ici
+              onPressed: () async {
                 if (enfant == null) {
-                  // Ajouter un nouvel enfant
-                  setState(() {
-                    enfants.add(Enfant(
-                      id: 'E00${enfants.length + 1}',
-                      nomPrenom: nomPrenomController.text,
-                      dateDeNaissance: DateTime.now(),
-                      taille: tailleController.text,
-                      poids: poidsController.text,
-                      imc: imcController.text,
-                    ));
-                  });
+                  // Ajouter un nouvel enfant dans la base de données
+                  await _enfantService.ajouterEnfant(Enfant(
+                    id: '', // Firebase génère l'ID
+                    nomPrenom: nomPrenomController.text,
+                    dateDeNaissance: DateTime.now(),
+                    taille: double.parse(tailleController.text),
+                    poids: double.parse(poidsController.text),
+                    imc: double.parse(imcController.text),
+                    userId:
+                        '', // À remplacer par l'ID de l'utilisateur si nécessaire
+                  ));
                 } else {
-                  // Modifier l'enfant existant
-                  setState(() {
-                    // enfant.nomPrenom = nomPrenomController.text;
-                    // enfant.taille = tailleController.text;
-                    // enfant.poids = poidsController.text;
-                    // enfant.imc = imcController.text;
-                  });
+                  // Modifier un enfant existant dans la base de données
+                  await _enfantService.modifierEnfant(
+                    enfant.id!,
+                    Enfant(
+                      id: enfant.id,
+                      nomPrenom: nomPrenomController.text,
+                      dateDeNaissance: enfant.dateDeNaissance,
+                      taille: double.parse(tailleController.text),
+                      poids: double.parse(poidsController.text),
+                      imc: double.parse(imcController.text),
+                      userId: enfant.userId,
+                    ),
+                  );
                 }
                 Navigator.of(context).pop();
               },
@@ -121,7 +108,8 @@ class _EnfantpageState extends State<Enfantpage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("Confirmation de suppression"),
-          content: Text("Êtes-vous sûr de vouloir supprimer ${enfant.nomPrenom}?"),
+          content:
+              Text("Êtes-vous sûr de vouloir supprimer ${enfant.nomPrenom}?"),
           actions: [
             TextButton(
               child: const Text("Annuler"),
@@ -131,10 +119,9 @@ class _EnfantpageState extends State<Enfantpage> {
             ),
             TextButton(
               child: const Text("Supprimer"),
-              onPressed: () {
-                setState(() {
-                  enfants.remove(enfant);
-                });
+              onPressed: () async {
+                // Supprimer l'enfant de Firebase
+                await _enfantService.supprimerEnfant(enfant.id!);
                 Navigator.of(context).pop();
               },
             ),
@@ -148,7 +135,6 @@ class _EnfantpageState extends State<Enfantpage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Expanded(flex: 1, child: BarDeRechercheWidget()),
         Expanded(
           flex: 10,
           child: Column(
@@ -158,54 +144,101 @@ class _EnfantpageState extends State<Enfantpage> {
                 child: const Text(
                   'Liste des enfants',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search',
+                    hintStyle:
+                        TextStyle(color: Color.fromARGB(175, 149, 148, 148)),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      size: 25,
+                      color: Color.fromARGB(175, 149, 148, 148),
+                    ),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
               Expanded(
                 flex: 10,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.8, // 90% de la largeur de l'écran
-                    height: MediaQuery.of(context).size.height * 1, // Hauteur fixe du tableau
-                    child: DataTable(
-                      columns: const [
-                        DataColumn(label: Text('ID')),
-                        DataColumn(label: Text('Nom et Prenom')),
-                        DataColumn(label: Text('Date de naissance')),
-                        DataColumn(label: Text('Taille')),
-                        DataColumn(label: Text('Poids')),
-                        DataColumn(label: Text('IMC')),
-                        DataColumn(label: Text('Actions')),
-                      ],
-                      rows: enfants.map((enfant) {
-                        return DataRow(cells: [
-                          DataCell(Text(enfant.id)),
-                          DataCell(Text(enfant.nomPrenom)),
-                          DataCell(Text(formatDate(enfant.dateDeNaissance))),
-                          DataCell(Text(enfant.taille)),
-                          DataCell(Text(enfant.poids)),
-                          DataCell(Text(enfant.imc)),
-                          DataCell(
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue),
-                                  onPressed: _openFormPopup
+                child: StreamBuilder<List<Enfant>>(
+                  stream: _enfantService.getEnfants(),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasError) {
+                      return const Center(
+                          child:
+                              Text('Erreur lors du chargement des enfants.'));
+                    }
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final enfants = snapshot.data ?? [];
+
+                    return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: SizedBox(
+                          width: MediaQuery.of(context).size.width *
+                              0.8, // 90% de la largeur de l'écran
+                          height: double.infinity,
+                          child: DataTable(
+                            columns: const [
+                              DataColumn(label: Text('ID')),
+                              DataColumn(label: Text('Nom et Prenom')),
+                              DataColumn(label: Text('Age')),
+                              DataColumn(label: Text('Taille')),
+                              DataColumn(label: Text('Poids')),
+                              DataColumn(label: Text('IMC')),
+                              DataColumn(label: Text('Actions')),
+                            ],
+                            rows:
+                                List<DataRow>.generate(enfants.length, (index) {
+                              final enfant = enfants[index];
+                              return DataRow(cells: [
+                                DataCell(Text((index + 1)
+                                    .toString())), // Incrémentation de l'index
+                                DataCell(Text(enfant.nomPrenom)),
+                                DataCell(Text((enfant.age).toString())),
+                                DataCell(Text((enfant.taille).toString())),
+                                DataCell(Text((enfant.poids).toString())),
+                                DataCell(Text((enfant.imc).toString())),
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.edit,
+                                            color: Colors.blue),
+                                        onPressed: () =>
+                                            _openFormPopup(enfant: enfant),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.delete,
+                                            color: Colors.red),
+                                        onPressed: () =>
+                                            _showDeleteConfirmationDialog(
+                                                enfant),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  onPressed:() {_showDeleteConfirmationDialog(enfant);}
-                                ),
-                              ],
-                            ),
+                              ]);
+                            }),
                           ),
-                        ]);
-                      }).toList(),
-                    ),
-                  ),
+                        ));
+                  },
                 ),
               ),
             ],
@@ -213,9 +246,5 @@ class _EnfantpageState extends State<Enfantpage> {
         ),
       ],
     );
-  }
-
-  String formatDate(DateTime date) {
-    return "${date.day}-${date.month}-${date.year}";
   }
 }

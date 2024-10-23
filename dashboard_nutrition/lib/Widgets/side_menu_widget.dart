@@ -42,10 +42,12 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     const Profilpage()
   ];
 
-
   @override
   Widget build(BuildContext context) {
     final data = SideMenuData();
+
+    // Récupérer l'utilisateur connecté
+    User? user = _auth.currentUser;
 
     return Scaffold(
       backgroundColor: bgCouleur,
@@ -56,14 +58,24 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
               flex: 2,
               child: SizedBox(
                 child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color.fromARGB(150, 81, 80, 85),
-                        Color.fromARGB(150, 64, 64, 64),
-                      ],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
+                  decoration: BoxDecoration(
+                    color: Colors.white, // Couleur du fond
+                    borderRadius: BorderRadius.circular(8),
+                    boxShadow: [
+                      BoxShadow(
+                        color:
+                            Colors.grey.withOpacity(0.5), // Couleur de l'ombre
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset:
+                            const Offset(0, 3), // Position de l'ombre (x, y)
+                      ),
+                    ],
+                    border: const Border(
+                      right: BorderSide(
+                        color: Colors.grey, // Couleur de la bordure droite
+                        width: 1, // Largeur de la bordure droite
+                      ),
                     ),
                   ),
                   child: Column(
@@ -82,7 +94,8 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                           margin: const EdgeInsets.symmetric(horizontal: 20),
                           child: ListView.builder(
                             itemCount: data.menu.length,
-                            itemBuilder: (context, index) => buildMenuEntry(data, index),
+                            itemBuilder: (context, index) =>
+                                buildMenuEntry(data, index),
                           ),
                         ),
                       ),
@@ -92,20 +105,23 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 20),
-                              child: const Row(
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 20),
+                              child: Row(
                                 children: [
-                                  CircleAvatar(
+                                  const CircleAvatar(
                                     radius: 25,
-                                    backgroundImage: AssetImage('assets/images/profil.jpg'),
+                                    backgroundImage:
+                                        AssetImage('assets/images/profil.jpg'),
                                   ),
-                                  SizedBox(width: 10),
+                                  const SizedBox(width: 10),
                                   Text(
-                                    "Adama SERMIN",
-                                    style: TextStyle(
+                                    user?.displayName ??
+                                        "Utilisateur", // Si displayName est null, afficher "Utilisateur"
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: Colors.grey,
                                     ),
                                   ),
                                 ],
@@ -114,10 +130,12 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                             const SizedBox(height: 15),
                             Container(
                               width: double.infinity,
-                              margin: const EdgeInsets.symmetric(horizontal: 20),
+                              margin:
+                                  const EdgeInsets.symmetric(horizontal: 20),
                               child: ElevatedButton(
                                 onPressed: () {
-                                  _showLogoutConfirmationDialog(context); // Appel de la fonction de popup
+                                  _showLogoutConfirmationDialog(
+                                      context); // Appel de la fonction de popup
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFFD9D9D9),
@@ -138,7 +156,8 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
                                     SizedBox(width: 8),
                                     Text(
                                       'Deconnexion',
-                                      style: TextStyle(fontSize: 16, color: Colors.black),
+                                      style: TextStyle(
+                                          fontSize: 16, color: Colors.black),
                                     ),
                                   ],
                                 ),
@@ -185,7 +204,7 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
               onPressed: () async {
                 Navigator.of(context).pop(); // Fermer le popup
                 await deconnexion(); // Appel de la fonction de déconnexion
-                 // Rediriger vers la page de connexion
+                // Rediriger vers la page de connexion
               },
             ),
           ],
@@ -213,13 +232,13 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
               padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
               child: FaIcon(
                 data.menu[index].icon,
-                color: isSelected ? Colors.white : Colors.white,
+                color: isSelected ? Colors.white : Colors.grey,
               ),
             ),
             Text(
               data.menu[index].titre,
               style: TextStyle(
-                color: isSelected ? Colors.white : Colors.white,
+                color: isSelected ? Colors.white : Colors.grey,
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),

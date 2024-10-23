@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
-      // home:  const Connexionpage(),
+
       routes: {
         '/': (context) => const Connexionpage(),
         '/dashboard': (context) => const SideMenuWidget()

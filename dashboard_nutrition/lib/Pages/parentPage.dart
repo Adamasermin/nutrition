@@ -1,4 +1,5 @@
 import 'package:dashboard_nutrition/Models/parent.dart';
+import 'package:dashboard_nutrition/Services/parent_service.dart';
 import 'package:dashboard_nutrition/Widgets/bar_de_recherche_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -11,11 +12,7 @@ class Parentpage extends StatefulWidget {
 
 class _ParentpageState extends State<Parentpage> {
 
-  final List<Parent> parents =[
-    Parent(id: 'id1', nomPrenom: 'nomPrenom', email: 'email', password: 'password', telephone: 'telephone'),
-    Parent(id: 'id2', nomPrenom: 'nomPrenom', email: 'email', password: 'password', telephone: 'telephone'),
-    Parent(id: 'id3', nomPrenom: 'nomPrenom', email: 'email', password: 'password', telephone: 'telephone'),
-  ];
+  final ParentService _parentService = ParentService();
 
   // Fonction pour ouvrir le formulaire dans un popup
   Future<void> _openFormPopup({Parent? parent}) async {
@@ -61,27 +58,27 @@ class _ParentpageState extends State<Parentpage> {
             ),
             TextButton(
               child: const Text("Enregistrer"),
-              onPressed: () {
-                // Logique d'ajout ou de modification de l'enfant ici
+              onPressed: () async {
+                // Logique d'ajout ou de modification
                 if (parent == null) {
-                  // Ajouter un nouvel enfant
-                  setState(() {
-                    parents.add(Parent(
-                      id: 'E00${parents.length + 1}',
+                   await _parentService.ajouterParent(Parent(
+                      id: '', // Firebase génère l'ID
                       nomPrenom: nomPrenomController.text,
                       email: emailController.text,
                       password: passwordController.text,
                       telephone: telephoneController.text,
-                    ));
-                  });
+                      ));
                 } else {
-                  // Modifier l'enfant existant
-                  setState(() {
-                    // enfant.nomPrenom = nomPrenomController.text;
-                    // enfant.taille = tailleController.text;
-                    // enfant.poids = poidsController.text;
-                    // enfant.imc = imcController.text;
-                  });
+                  await _parentService.modifierParent(
+                    parent.id!,
+                    Parent(
+                        id: parent.id,
+                        nomPrenom: nomPrenomController.text,
+                        email: emailController.text,
+                        password: passwordController.text,
+                        telephone: telephoneController.text,
+                    ),
+                  );
                 }
                 Navigator.of(context).pop();
               },
@@ -109,10 +106,8 @@ class _ParentpageState extends State<Parentpage> {
             ),
             TextButton(
               child: const Text("Supprimer"),
-              onPressed: () {
-                setState(() {
-                  parents.remove(parent);
-                });
+              onPressed: () async {
+                await _parentService.supprimerParent(parent.id!);
                 Navigator.of(context).pop();
               },
             ),
