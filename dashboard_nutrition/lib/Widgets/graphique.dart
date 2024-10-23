@@ -33,7 +33,7 @@ class Graphique extends StatelessWidget {
               sideTitles: SideTitles(
                 showTitles: true,
                 getTitlesWidget: (value, meta) {
-                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jui', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'];
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(months[value.toInt()]),
@@ -92,6 +92,50 @@ class Graphique extends StatelessWidget {
         ],
       ),
       BarChartGroupData(
+        x: 5,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),
+      BarChartGroupData(
+        x: 5,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),
+      BarChartGroupData(
+        x: 5,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
+        x: 5,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
+        x: 5,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
+        x: 5,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
         x: 5,
         barRods: [
           BarChartRodData(toY: 85, color: Colors.blue),

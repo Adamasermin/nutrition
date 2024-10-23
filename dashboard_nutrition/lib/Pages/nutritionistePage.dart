@@ -1,6 +1,5 @@
 import 'package:dashboard_nutrition/Models/nutritioniste.dart';
 import 'package:dashboard_nutrition/Services/nutritioniste_service.dart';
-import 'package:dashboard_nutrition/Widgets/bar_de_recherche_widget.dart';
 import 'package:flutter/material.dart';
 
 class Nutritionistepage extends StatefulWidget {
@@ -76,7 +75,7 @@ class _NutritionistepageState extends State<Nutritionistepage> {
                       ));
                 } else {
                   await _nutritionisteService.modifierNutri(
-                    nutritioniste.id!,
+                    nutritioniste.id,
                     Nutritioniste(
                         id: nutritioniste.id,
                         nomPrenom: nomPrenomController.text,
@@ -114,7 +113,7 @@ class _NutritionistepageState extends State<Nutritionistepage> {
             TextButton(
               child: const Text("Supprimer"),
               onPressed: () async {
-                await _nutritionisteService.supprimerNutri(nutritioniste.id!);
+                await _nutritionisteService.supprimerNutri(nutritioniste.id);
                 Navigator.of(context).pop();
               },
             ),

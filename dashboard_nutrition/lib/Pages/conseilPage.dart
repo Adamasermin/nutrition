@@ -32,7 +32,7 @@ class _ConseilpageState extends State<Conseilpage> {
               child: const Text("Supprimer"),
               onPressed: () async {
                 // Supprimer le conseil de Firebase
-                await _conseilService.supprimerConseil(conseil.id!);
+                await _conseilService.supprimerConseil(conseil.id);
                 Navigator.of(context).pop();
               },
             ),
@@ -90,7 +90,7 @@ class _ConseilpageState extends State<Conseilpage> {
                 } else {
                   // Modifier un enfant existant dans la base de données
                   await _conseilService.modifierConseil(
-                    conseil.id!,
+                    conseil.id,
                     Conseil(
                         id: conseil.id,
                         titre: titreController.text,

@@ -1,9 +1,17 @@
 import 'package:dashboard_nutrition/Widgets/bar_de_recherche_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class Profilpage extends StatelessWidget {
+class Profilpage extends StatefulWidget {
   const Profilpage({super.key});
+
+  @override
+  State<Profilpage> createState() => _ProfilpageState();
+}
+
+class _ProfilpageState extends State<Profilpage> {
+  final User? user = FirebaseAuth.instance.currentUser; // Récupère l'utilisateur connecté
 
   Future<void> _pickImage(BuildContext context) async {
     final picker = ImagePicker();
@@ -42,8 +50,8 @@ class Profilpage extends StatelessWidget {
                           ),
                           child: const CircleAvatar(
                             radius: 45,
-                            backgroundImage:
-                                AssetImage('assets/images/profil.jpg'),
+                            backgroundImage: AssetImage('assets/images/profil.jpg'),
+                            // Vous pouvez également mettre à jour l'avatar ici avec l'image de l'utilisateur connecté si disponible
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -51,7 +59,6 @@ class Profilpage extends StatelessWidget {
                           'Upload Photo',
                           style: TextStyle(
                             color: Colors.blue,
-                            // decoration: TextDecoration.underline,
                           ),
                         ),
                       ],
@@ -83,9 +90,9 @@ class Profilpage extends StatelessWidget {
                                 color: Colors.grey.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text(
-                                "Nom non disponible",
-                                style: TextStyle(fontSize: 16),
+                              child: Text(
+                                user?.displayName ?? "Nom non disponible",
+                                style: const TextStyle(fontSize: 16),
                               ),
                             ),
                             const SizedBox(height: 20),
@@ -104,9 +111,9 @@ class Profilpage extends StatelessWidget {
                                 color: Colors.grey.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text(
-                                "Mail non disponible",
-                                style: TextStyle(fontSize: 16),
+                              child: Text(
+                                user?.email ?? "Email non disponible",
+                                style: const TextStyle(fontSize: 16),
                               ),
                             ),
                           ],
@@ -119,7 +126,7 @@ class Profilpage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "Telephone",
+                              "Téléphone",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -133,14 +140,14 @@ class Profilpage extends StatelessWidget {
                                 color: Colors.grey.withOpacity(0.2),
                                 borderRadius: BorderRadius.circular(8),
                               ),
-                              child: const Text(
-                                "Numero non disponible",
-                                style: TextStyle(fontSize: 16),
+                              child: Text(
+                                user?.phoneNumber ?? "Numéro non disponible",
+                                style: const TextStyle(fontSize: 16),
                               ),
                             ),
                             const SizedBox(height: 20),
                             const Text(
-                              "Password",
+                              "Mot de passe",
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -155,11 +162,10 @@ class Profilpage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: const Text(
-                                "Password non disponible",
+                                "********", // Le mot de passe n'est pas directement accessible
                                 style: TextStyle(fontSize: 16),
                               ),
                             ),
-                            // const SizedBox(height: 15),
                           ],
                         ),
                       ),
@@ -171,7 +177,7 @@ class Profilpage extends StatelessWidget {
                   height: 35,
                   child: ElevatedButton(
                     onPressed: () {
-                      // Ajouter la logique de modification
+                      // Ajouter la logique de modification du profil
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF7A73D),
@@ -182,7 +188,7 @@ class Profilpage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text('Modification'),
+                    child: const Text('Modifier le profil'),
                   ),
                 ),
               ],
