@@ -11,7 +11,8 @@ Future<void> main() async {
       apiKey: 'AIzaSyATvebU3IGPEtIMbRoirT6bsBwgfeKxeuA', 
       appId: '1:67753090159:web:334141ceb57efeafd8c19a', 
       messagingSenderId: '67753090159', 
-      projectId: 'gestion-nutrition'
+      projectId: 'gestion-nutrition',
+      storageBucket: "gestion-nutrition.appspot.com", 
     )
   );
   runApp(const MyApp());
@@ -31,6 +32,8 @@ class MyApp extends StatelessWidget {
           Theme.of(context).textTheme,
         ),
       ),
+
+      // home: const SideMenuWidget(),
 
       routes: {
         '/': (context) => const Connexionpage(),

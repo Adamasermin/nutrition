@@ -19,25 +19,27 @@ class Graphique extends StatelessWidget {
                 reservedSize: 40,
                 getTitlesWidget: (value, meta) {
                   return Text(
-                    '${value.toInt()}%',
+                    '${value.toInt()}%', // Conversion pour afficher en pourcentage
                     style: const TextStyle(color: Colors.black, fontSize: 12),
                   );
                 },
               ),
             ),
-            topTitles: const AxisTitles(
-              sideTitles: SideTitles(showTitles: false)
-            ),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
+                reservedSize: 35, // Réserver plus d'espace pour les titres du bas
                 getTitlesWidget: (value, meta) {
-                  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jui', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'];
-                  return Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(months[value.toInt()]),
-                  );
+                  const months = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Jun', 'Jui', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'];
+                  if (value.toInt() >= 0 && value.toInt() < months.length) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(months[value.toInt()], style: const TextStyle(color: Colors.black, fontSize: 12)),
+                    );
+                  }
+                  return const SizedBox.shrink(); // Retourne une boîte vide si la valeur est hors du tableau
                 },
               ),
             ),
@@ -100,49 +102,49 @@ class Graphique extends StatelessWidget {
         ],
       ),
       BarChartGroupData(
-        x: 5,
+        x: 6,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
+        x: 7,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
+        x: 8,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
+        x: 9,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
+        x: 10,
+        barRods: [
+          BarChartRodData(toY: 85, color: Colors.blue),
+          BarChartRodData(toY: 75, color: Colors.orange),
+          BarChartRodData(toY: 65, color: Colors.purple),
+        ],
+      ),BarChartGroupData(
+        x: 11,
         barRods: [
           BarChartRodData(toY: 85, color: Colors.blue),
           BarChartRodData(toY: 75, color: Colors.orange),
           BarChartRodData(toY: 65, color: Colors.purple),
         ],
       ),
-      BarChartGroupData(
-        x: 5,
-        barRods: [
-          BarChartRodData(toY: 85, color: Colors.blue),
-          BarChartRodData(toY: 75, color: Colors.orange),
-          BarChartRodData(toY: 65, color: Colors.purple),
-        ],
-      ),BarChartGroupData(
-        x: 5,
-        barRods: [
-          BarChartRodData(toY: 85, color: Colors.blue),
-          BarChartRodData(toY: 75, color: Colors.orange),
-          BarChartRodData(toY: 65, color: Colors.purple),
-        ],
-      ),BarChartGroupData(
-        x: 5,
-        barRods: [
-          BarChartRodData(toY: 85, color: Colors.blue),
-          BarChartRodData(toY: 75, color: Colors.orange),
-          BarChartRodData(toY: 65, color: Colors.purple),
-        ],
-      ),BarChartGroupData(
-        x: 5,
-        barRods: [
-          BarChartRodData(toY: 85, color: Colors.blue),
-          BarChartRodData(toY: 75, color: Colors.orange),
-          BarChartRodData(toY: 65, color: Colors.purple),
-        ],
-      ),BarChartGroupData(
-        x: 5,
-        barRods: [
-          BarChartRodData(toY: 85, color: Colors.blue),
-          BarChartRodData(toY: 75, color: Colors.orange),
-          BarChartRodData(toY: 65, color: Colors.purple),
-        ],
-      ),
+     
     ];
   }
 }

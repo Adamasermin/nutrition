@@ -11,6 +11,40 @@ class Enfantpage extends StatefulWidget {
 
 class _EnfantpageState extends State<Enfantpage> {
   final EnfantService _enfantService = EnfantService();
+  final TextEditingController _searchController = TextEditingController();
+
+  List<Enfant> _enfants = [];
+  List<Enfant> _filteredEnfants = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadEnfants(); // Charger la liste des enfants au démarrage
+  }
+
+  // Fonction pour charger les enfants depuis le service
+  Future<void> _loadEnfants() async {
+    final enfants = await _enfantService.getEnfants().first;
+    setState(() {
+      _enfants = enfants;
+      _filteredEnfants = enfants; // Par défaut, tous les enfants sont affichés
+    });
+  }
+
+  // Fonction pour filtrer les enfants selon le nom ou l'âge
+  void _filterEnfants(String query) {
+    setState(() {
+      _filteredEnfants = _enfants.where((enfant) {
+        final nomPrenomLower = enfant.nomPrenom.toLowerCase();
+        final ageStr = enfant.getAge().toString();
+        final searchLower = query.toLowerCase();
+
+        // Retourne vrai si le nom ou l'âge correspond à la recherche
+        return nomPrenomLower.contains(searchLower) ||
+            ageStr.contains(searchLower);
+      }).toList();
+    });
+  }
 
   // Fonction pour ouvrir le formulaire dans un popup
   Future<void> _openFormPopup({Enfant? enfant}) async {
@@ -57,12 +91,20 @@ class _EnfantpageState extends State<Enfantpage> {
           ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red, // Couleur d'arrière-plan
+                foregroundColor: Colors.white, // Couleur du texte (optionnelle)
+              ),
               child: const Text("Annuler"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.green, // Couleur d'arrière-plan
+                foregroundColor: Colors.white, // Couleur du texte (optionnelle)
+              ),
               child: const Text("Enregistrer"),
               onPressed: () async {
                 if (enfant == null) {
@@ -112,12 +154,24 @@ class _EnfantpageState extends State<Enfantpage> {
               Text("Êtes-vous sûr de vouloir supprimer ${enfant.nomPrenom}?"),
           actions: [
             TextButton(
+               style: TextButton.styleFrom(
+                backgroundColor: Colors
+                    .grey,
+                foregroundColor:
+                    Colors.white, 
+              ),
               child: const Text("Annuler"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors
+                    .red,
+                foregroundColor:
+                    Colors.white, 
+              ),
               child: const Text("Supprimer"),
               onPressed: () async {
                 // Supprimer l'enfant de Firebase
@@ -135,113 +189,110 @@ class _EnfantpageState extends State<Enfantpage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        Container(
+          margin: const EdgeInsets.only(top: 50, bottom: 50),
+          child: const Text(
+            'Liste des enfants',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        Container(
+          width: MediaQuery.of(context).size.width * 0.5,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade100,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: TextField(
+            controller: _searchController,
+            decoration: const InputDecoration(
+              hintText: 'Recherche',
+              hintStyle:
+                  TextStyle(color: Color.fromARGB(175, 149, 148, 148)),
+              prefixIcon: Icon(
+                Icons.search,
+                size: 25,
+                color: Color.fromARGB(175, 149, 148, 148),
+              ),
+              border: InputBorder.none,
+            ),
+            onChanged: (value) {
+              _filterEnfants(value); // Filtrer les résultats en fonction de la saisie
+            },
+          ),
+        ),
+        const SizedBox(
+          height: 20,
+        ),
         Expanded(
           flex: 10,
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: 50, bottom: 50),
-                child: const Text(
-                  'Liste des enfants',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width * 0.5,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search',
-                    hintStyle:
-                        TextStyle(color: Color.fromARGB(175, 149, 148, 148)),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      size: 25,
-                      color: Color.fromARGB(175, 149, 148, 148),
-                    ),
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 20,
-              ),
-              Expanded(
-                flex: 10,
-                child: StreamBuilder<List<Enfant>>(
-                  stream: _enfantService.getEnfants(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasError) {
-                      return const Center(
-                          child:
-                              Text('Erreur lors du chargement des enfants.'));
-                    }
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    final enfants = snapshot.data ?? [];
-
-                    return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width *
-                              0.8, // 90% de la largeur de l'écran
-                          height: double.infinity,
-                          child: DataTable(
-                            columns: const [
-                              DataColumn(label: Text('ID')),
-                              DataColumn(label: Text('Nom et Prenom')),
-                              DataColumn(label: Text('Age')),
-                              DataColumn(label: Text('Taille')),
-                              DataColumn(label: Text('Poids')),
-                              DataColumn(label: Text('IMC')),
-                              DataColumn(label: Text('Actions')),
-                            ],
-                            rows:
-                                List<DataRow>.generate(enfants.length, (index) {
-                              final enfant = enfants[index];
-                              return DataRow(cells: [
-                                DataCell(Text((index + 1)
-                                    .toString())), // Incrémentation de l'index
-                                DataCell(Text(enfant.nomPrenom)),
-                                DataCell(Text((enfant.age).toString())),
-                                DataCell(Text((enfant.taille).toString())),
-                                DataCell(Text((enfant.poids).toString())),
-                                DataCell(Text((enfant.imc).toString())),
-                                DataCell(
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit,
-                                            color: Colors.blue),
-                                        onPressed: () =>
-                                            _openFormPopup(enfant: enfant),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete,
-                                            color: Colors.red),
-                                        onPressed: () =>
-                                            _showDeleteConfirmationDialog(
-                                                enfant),
-                                      ),
-                                    ],
-                                  ),
+          child: StreamBuilder<List<Enfant>>(
+            stream: _enfantService.getEnfants(),
+            builder: (context, snapshot) {
+              if (snapshot.hasError) {
+                return const Center(
+                    child: Text('Erreur lors du chargement des enfants.'));
+              }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              // Mise à jour de la liste complète d'enfants quand les données sont chargées
+              if (snapshot.hasData) {
+                _enfants = snapshot.data ?? [];
+                _filteredEnfants = _searchController.text.isEmpty ? _enfants : _filteredEnfants; // Utilisez la liste filtrée si une recherche est active
+              }
+    
+              return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width *
+                        0.8, // 90% de la largeur de l'écran
+                    height: double.infinity,
+                    child: DataTable(
+                      columns: const [
+                        DataColumn(label: Text('ID')),
+                        DataColumn(label: Text('Nom et Prenom')),
+                        DataColumn(label: Text('Age')),
+                        DataColumn(label: Text('Taille')),
+                        DataColumn(label: Text('Poids')),
+                        DataColumn(label: Text('IMC')),
+                        DataColumn(label: Text('Actions')),
+                      ],
+                      rows:
+                          List<DataRow>.generate(_filteredEnfants.length, (index) {
+                        final enfant = _filteredEnfants[index];
+                        return DataRow(cells: [
+                          DataCell(Text((index + 1).toString())),
+                          DataCell(Text(enfant.nomPrenom)),
+                          DataCell(Text(enfant.getAge().toString())), 
+                          DataCell(Text((enfant.taille).toString())),
+                          DataCell(Text((enfant.poids).toString())),
+                          DataCell(Text((enfant.imc).toString())),
+                          DataCell(
+                            Row(
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.blue),
+                                  onPressed: () =>
+                                      _openFormPopup(enfant: enfant),
                                 ),
-                              ]);
-                            }),
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
+                                  onPressed: () =>
+                                      _showDeleteConfirmationDialog( enfant),
+                                ),
+                              ],
+                            ),
                           ),
-                        ));
-                  },
-                ),
-              ),
-            ],
+                        ]);
+                      }),
+                    ),
+                  ));
+            },
           ),
         ),
       ],

@@ -22,6 +22,16 @@ class Enfant {
   required this.userId,
   });
 
+  // Méthode pour calculer l'âge
+  int getAge() {
+    DateTime today = DateTime.now();
+    int age = today.year - dateDeNaissance.year;
+    if (today.month < dateDeNaissance.month ||
+        (today.month == dateDeNaissance.month && today.day < dateDeNaissance.day)) {
+      age--;
+    }
+    return age;
+  }
   // Convertir un enfant en map pour la base de données
   Map<String, dynamic> toMap() {
     return {

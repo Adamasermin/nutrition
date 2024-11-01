@@ -1,6 +1,6 @@
-import 'package:dashboard_nutrition/Widgets/bar_de_recherche_widget.dart';
+import 'dart:typed_data';
+import 'dart:html' as html;
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Profilpage extends StatefulWidget {
@@ -11,25 +11,89 @@ class Profilpage extends StatefulWidget {
 }
 
 class _ProfilpageState extends State<Profilpage> {
-  final User? user = FirebaseAuth.instance.currentUser; // Récupère l'utilisateur connecté
+  final User? user = FirebaseAuth.instance.currentUser;
+  Uint8List? _imageData;
 
-  Future<void> _pickImage(BuildContext context) async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  Future<void> _pickImage() async {
+    // Crée un élément d'entrée de fichier
+    final html.FileUploadInputElement uploadInput = html.FileUploadInputElement();
+    uploadInput.accept = 'image/*'; // Acceptation uniquement des images
+    uploadInput.click(); // Ouvre le sélecteur de fichiers
 
-    if (pickedFile != null) {
-      // Gérer l'image sélectionnée, par exemple, mettre à jour l'avatar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Image sélectionnée: ${pickedFile.path}')),
-      );
-    }
+    uploadInput.onChange.listen((e) async {
+      final files = uploadInput.files;
+      if (files!.isEmpty) return; // Aucun fichier sélectionné
+
+      final reader = html.FileReader();
+      reader.readAsArrayBuffer(files[0]); // Lire le fichier comme un tableau d'octets
+      reader.onLoadEnd.listen((e) {
+        setState(() {
+          _imageData = reader.result as Uint8List;
+        });
+      });
+    });
+  }
+
+  Future<void> _showEditProfileDialog() async {
+    final TextEditingController nameController = TextEditingController(text: user?.displayName);
+    final TextEditingController emailController = TextEditingController(text: user?.email);
+    final TextEditingController phoneController = TextEditingController(text: user?.phoneNumber);
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Modifier le profil'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: [
+                TextField(
+                  controller: nameController,
+                  decoration: const InputDecoration(labelText: 'Nom et Prénom'),
+                ),
+                TextField(
+                  controller: emailController,
+                  decoration: const InputDecoration(labelText: 'Email'),
+                ),
+                TextField(
+                  controller: phoneController,
+                  decoration: const InputDecoration(labelText: 'Téléphone'),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Annuler'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Ferme le dialogue
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('Enregistrer'),
+              onPressed: () {
+                // Logique pour mettre à jour les informations du profil
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Expanded(flex: 1, child: BarDeRechercheWidget()),
         Expanded(
           flex: 10,
           child: Padding(
@@ -38,7 +102,7 @@ class _ProfilpageState extends State<Profilpage> {
               children: [
                 Center(
                   child: GestureDetector(
-                    onTap: () => _pickImage(context),
+                    onTap: () => _pickImage(),
                     child: Column(
                       children: [
                         Container(
@@ -48,10 +112,11 @@ class _ProfilpageState extends State<Profilpage> {
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.black, width: 2),
                           ),
-                          child: const CircleAvatar(
+                          child: CircleAvatar(
                             radius: 45,
-                            backgroundImage: AssetImage('assets/images/profil.jpg'),
-                            // Vous pouvez également mettre à jour l'avatar ici avec l'image de l'utilisateur connecté si disponible
+                            backgroundImage: _imageData != null
+                                ? MemoryImage(_imageData!) // Affiche l'image sélectionnée
+                                : const AssetImage('assets/images/profil.jpg'), // Image par défaut
                           ),
                         ),
                         const SizedBox(height: 8),
@@ -172,13 +237,11 @@ class _ProfilpageState extends State<Profilpage> {
                     ],
                   ),
                 ),
-                Container(
+                SizedBox(
                   width: MediaQuery.of(context).size.width * 0.2,
                   height: 35,
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Ajouter la logique de modification du profil
-                    },
+                    onPressed: _showEditProfileDialog, // Ouvre le popup
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF7A73D),
                       foregroundColor: Colors.white,

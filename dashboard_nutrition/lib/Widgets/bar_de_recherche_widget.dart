@@ -8,46 +8,24 @@ class BarDeRechercheWidget extends StatelessWidget {
     return Expanded(
         flex: 1,
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-                flex: 6,
-                child: Container(
-                  margin: const EdgeInsets.only(top: 10, left: 20),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Salut!!!',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      Text('Bienvenue'),
-                    ],
+            Container(
+              margin: const EdgeInsets.only(top: 10, left: 20),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Salut!!!',
+                    style: TextStyle(color: Colors.grey),
                   ),
-                )),
-            Expanded(
-              flex: 9,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search',
-                    hintStyle:
-                        TextStyle(color: Color.fromARGB(175, 149, 148, 148)),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      size: 25,
-                      color: Color.fromARGB(175, 149, 148, 148),
-                    ),
-                    border: InputBorder.none,
-                  ),
-                ),
+                  Text('Bienvenue'),
+                ],
               ),
             ),
-            Expanded(
-              flex: 1,
+            
+            Container(
+              margin: const EdgeInsets.only(right: 30),
               child: InkWell(
                 onTap: () => Navigator.pushNamed(context, '/notification'),
                 child: const Icon(

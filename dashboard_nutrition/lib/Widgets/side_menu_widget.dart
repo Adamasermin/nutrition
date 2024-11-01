@@ -26,7 +26,6 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
     try {
       await _auth.signOut();
       Navigator.of(context).pushReplacementNamed('/');
-      print('Déconnexion réussie');
     } catch (e) {
       print('Erreur lors de la déconnexion : $e');
     }
@@ -194,12 +193,24 @@ class _SideMenuWidgetState extends State<SideMenuWidget> {
           content: const Text("Voulez-vous vraiment vous déconnecter ?"),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors
+                    .grey,
+                foregroundColor:
+                    Colors.white, 
+              ),
               child: const Text("Annuler"),
               onPressed: () {
                 Navigator.of(context).pop(); // Fermer le popup
               },
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors
+                    .red,
+                foregroundColor:
+                    Colors.white, 
+              ),
               child: const Text("Confirmer"),
               onPressed: () async {
                 Navigator.of(context).pop(); // Fermer le popup

@@ -1,4 +1,5 @@
 import 'package:dashboard_nutrition/Data/card_data.dart';
+import 'package:dashboard_nutrition/Models/card.dart';
 import 'package:dashboard_nutrition/Widgets/bar_de_recherche_widget.dart';
 import 'package:dashboard_nutrition/Widgets/bar_graphique_widget.dart';
 import 'package:flutter/material.dart';
@@ -59,56 +60,76 @@ class Utilisateur extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(20),
-      child: GridView.builder(
-        itemCount: cardData.card.length,
-        physics: const NeverScrollableScrollPhysics(),
-        shrinkWrap: true,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 1, // Une seule colonne pour chaque carte
-          crossAxisSpacing: 15, 
-          mainAxisSpacing: 15, 
-          childAspectRatio: 1.6, // Ratio de la taille des cartes
-        ),
-        itemBuilder: (context, index) {
-          final List<Color> colors = [
-            const Color.fromARGB(242, 8, 144, 178), // Enfants inscrits
-            const Color.fromARGB(242, 90, 33, 182), // Parents actifs
-            const Color.fromARGB(242, 247, 166, 61), // Nutritionnistes
-          ];
+      child: FutureBuilder<List<UserCard>>(
+        future: cardData.getCardData(), // Appel pour récupérer les données depuis Firebase
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator()); // Afficher un loader pendant le chargement
+          }
+          if (snapshot.hasError) {
+            return const Center(child: Text('Erreur lors du chargement des données.'));
+          }
 
-          return Container(
-            margin: const EdgeInsets.all(10),
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-              color: colors[index % colors.length],
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text('Aucune donnée disponible.'));
+          }
+
+          final cards = snapshot.data!;
+
+          return GridView.builder(
+            itemCount: cards.length,
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 1, // Une seule colonne pour chaque carte
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
+              childAspectRatio: 1.6, // Ratio de la taille des cartes
             ),
-            child: Row(
-              children: [
-                Container(
-                  margin: const EdgeInsets.only(right: 15),
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(Icons.person, color: Colors.white),
+            itemBuilder: (context, index) {
+              final List<Color> colors = [
+                const Color.fromARGB(242, 8, 144, 178), // Enfants inscrits
+                const Color.fromARGB(242, 90, 33, 182), // Parents actifs
+                const Color.fromARGB(242, 247, 166, 61), // Nutritionnistes
+              ];
+
+              final card = cards[index];
+
+              return Container(
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+                  color: colors[index % colors.length],
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Text(
-                      cardData.card[index].titre,
-                      style: const TextStyle(fontSize: 16, color: Colors.white),
+                    Container(
+                      margin: const EdgeInsets.only(right: 15),
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(card.icon, color: Colors.white),
                     ),
-                    Text(
-                      cardData.card[index].nombre,
-                      style: const TextStyle(fontSize: 14, color: Colors.white),
-                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          card.titre,
+                          style: const TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                        Text(
+                          card.nombre,
+                          style: const TextStyle(fontSize: 14, color: Colors.white),
+                        ),
+                      ],
+                    )
                   ],
-                )
-              ],
-            ),
+                ),
+              );
+            },
           );
         },
       ),

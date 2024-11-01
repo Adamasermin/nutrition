@@ -12,6 +12,40 @@ class Conseilpage extends StatefulWidget {
 
 class _ConseilpageState extends State<Conseilpage> {
   final ConseilService _conseilService = ConseilService();
+  final TextEditingController _searchController = TextEditingController();
+
+  List<Conseil> _conseils = [];
+  List<Conseil> _filteredConseils = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadConseils(); // Charger la liste des conseils au démarrage
+  }
+
+  // Fonction pour charger les conseils depuis le service
+  Future<void> _loadConseils() async {
+    final conseils = await _conseilService.getConseils().first;
+    setState(() {
+      _conseils = conseils;
+      _filteredConseils = conseils;
+    });
+  }
+
+  // Fonction pour filtrer les conseils selon le titre ou la description
+  void _filterConseils(String query) {
+    setState(() {
+      _filteredConseils = _conseils.where((conseil) {
+        final titreLower = conseil.titre.toLowerCase();
+        final descriptionLower = conseil.description.toLowerCase();
+        final searchLower = query.toLowerCase();
+
+        // Retourne vrai si le nom ou l'âge correspond à la recherche
+        return titreLower.contains(searchLower) ||
+            descriptionLower.contains(searchLower);
+      }).toList();
+    });
+  }
 
   // Fonction pour ouvrir un popup de confirmation de suppression
   Future<void> _showDeleteConfirmationDialog(Conseil conseil) async {
@@ -23,12 +57,24 @@ class _ConseilpageState extends State<Conseilpage> {
           content: Text("Êtes-vous sûr de vouloir supprimer ${conseil.titre}?"),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors
+                    .grey,
+                foregroundColor:
+                    Colors.white, 
+              ),
               child: const Text("Annuler"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors
+                    .red,
+                foregroundColor:
+                    Colors.white, 
+              ),
               child: const Text("Supprimer"),
               onPressed: () async {
                 // Supprimer le conseil de Firebase
@@ -73,12 +119,20 @@ class _ConseilpageState extends State<Conseilpage> {
           ),
           actions: [
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red, // Couleur d'arrière-plan
+                foregroundColor: Colors.white, // Couleur du texte (optionnelle)
+              ),
               child: const Text("Annuler"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.green, // Couleur d'arrière-plan
+                foregroundColor: Colors.white, // Couleur du texte (optionnelle)
+              ),
               child: const Text("Enregistrer"),
               onPressed: () async {
                 if (conseil == null) {
@@ -146,46 +200,52 @@ class _ConseilpageState extends State<Conseilpage> {
                   ],
                 ),
               ),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.5,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: TextField(
+                  controller: _searchController,
+                  decoration: const InputDecoration(
+                    hintText: 'Recherche',
+                    hintStyle:
+                        TextStyle(color: Color.fromARGB(175, 149, 148, 148)),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      size: 25,
+                      color: Color.fromARGB(175, 149, 148, 148),
+                    ),
+                    border: InputBorder.none,
+                  ),
+                  onChanged: (value) {
+                    _filterConseils(value);
+                  },
+                ),
+              ),
               Expanded(
                 flex: 10,
                 child: StreamBuilder<List<Conseil>>(
                   stream: _conseilService.getConseils(),
-                  builder: (BuildContext context, AsyncSnapshot<List<Conseil>> snapshot) {
+                  builder: (BuildContext context,
+                      AsyncSnapshot<List<Conseil>> snapshot) {
                     if (snapshot.hasError) {
                       return const Center(
-                          child: Text('Erreur lors du chargement des conseils.'));
+                          child:
+                              Text('Erreur lors du chargement des conseils.'));
                     }
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
 
-                    final conseils = snapshot.data ?? [];
+                    if (snapshot.hasData) {
+                      _conseils = snapshot.data ?? [];
+                      _filteredConseils = _searchController.text.isEmpty ? _conseils : _filteredConseils; // Utilisez la liste filtrée si une recherche est active
+                    }
 
                     return Column(
                       children: [
-                        Expanded(
-                          flex: 1,
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.5,
-                            decoration: BoxDecoration(
-                              color: Colors.grey.shade100,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Search',
-                                hintStyle: TextStyle(
-                                    color: Color.fromARGB(175, 149, 148, 148)),
-                                prefixIcon: Icon(
-                                  Icons.search,
-                                  size: 25,
-                                  color: Color.fromARGB(175, 149, 148, 148),
-                                ),
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                        ),
                         const SizedBox(
                           height: 20,
                         ),
@@ -203,8 +263,9 @@ class _ConseilpageState extends State<Conseilpage> {
                                   DataColumn(label: Text('Description')),
                                   DataColumn(label: Text('Actions')),
                                 ],
-                                rows: List<DataRow>.generate(conseils.length,(index) {
-                                  final conseil = conseils[index];
+                                rows: List<DataRow>.generate(_filteredConseils.length,
+                                    (index) {
+                                  final conseil = _filteredConseils[index];
 
                                   return DataRow(cells: [
                                     DataCell(Text((index + 1).toString())),
@@ -217,7 +278,7 @@ class _ConseilpageState extends State<Conseilpage> {
                                             icon: const Icon(Icons.edit,
                                                 color: Colors.blue),
                                             onPressed: () {
-                                              _openFormPopup();
+                                              _openFormPopup(conseil: conseil);
                                             },
                                           ),
                                           IconButton(
