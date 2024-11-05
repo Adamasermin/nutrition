@@ -1,13 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:nutrition_app/Models/conseil.dart';
 
-
-
 class ConseilService {
   final CollectionReference conseilsCollection = FirebaseFirestore.instance.collection('conseils');
-  
 
-  // Afficher les conseils
+  // Afficher tous les conseils
   Stream<List<Conseil>> getConseils() {
     return conseilsCollection.snapshots().map((snapshot) {
       return snapshot.docs.map((doc) {
@@ -15,6 +12,21 @@ class ConseilService {
           id: doc.id,
           titre: doc['titre'],
           description: doc['description'],
+          userId: doc['userId'], // Assurez-vous d'inclure userId ici
+        );
+      }).toList();
+    });
+  }
+
+  // Afficher les conseils par ID utilisateur
+  Stream<List<Conseil>> getConseilsByUserId(String userId) {
+    return conseilsCollection.where('userId', isEqualTo: userId).snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return Conseil(
+          id: doc.id,
+          titre: doc['titre'],
+          description: doc['description'],
+          userId: doc['userId'], // Inclure userId si nécessaire
         );
       }).toList();
     });
@@ -25,6 +37,7 @@ class ConseilService {
     return conseilsCollection.add({
       'titre': conseil.titre,
       'description': conseil.description,
+      'userId': conseil.userId, // Inclure userId lors de l'ajout
     });
   }
 
@@ -33,6 +46,7 @@ class ConseilService {
     return conseilsCollection.doc(id).update({
       'titre': conseil.titre,
       'description': conseil.description,
+      // Inclure userId si nécessaire
     });
   }
 

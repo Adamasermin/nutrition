@@ -1,41 +1,42 @@
 class Recette {
-
-  String? id;
+  String id;
   String titre;
-  String description;
   String ingredients;
+  String description;
   String instructions;
   String photo;
+  bool estFavori; // Ajoutez ce champ
 
   Recette({
-    this.id,
+    required this.id,
     required this.titre,
-    required this.description,
     required this.ingredients,
+    required this.description,
     required this.instructions,
     required this.photo,
+    this.estFavori = false, // Valeur par défaut
   });
 
-  // Convertir un objet recette en une map de la base de données
-   Map<String, dynamic> toMap() {
-    return {
-      'titre': titre,
-      'description': description,
-      'ingredients': ingredients,
-      'photo': photo,
-    };
+  factory Recette.fromMap(Map<String, dynamic> data, String id) {
+    return Recette(
+      id: id,
+      titre: data['titre'],
+      ingredients: data['ingredients'],
+      description: data['description'],
+      instructions: data['instructions'],
+      photo: data['photo'],
+      estFavori: data['estFavori'] ?? false, // Charger l'état favori
+    );
   }
 
-  // Convertir une map de la base de données en objet recette
-  factory Recette.fromMap(Map<String, dynamic> map, String documentId) {
-    return Recette(
-      id: documentId,
-      titre: map['titre'],
-      description: map['description'],
-      ingredients: map['ingredients'],
-      instructions: map['instructions'],
-      photo: map['photo'], 
-    );
-}
-
+  Map<String, dynamic> toMap() {
+    return {
+      'titre': titre,
+      'ingredients': ingredients,
+      'description': description,
+      'instructions': instructions,
+      'photo': photo,
+      'estFavori': estFavori, // Inclure l'état favori
+    };
+  }
 }

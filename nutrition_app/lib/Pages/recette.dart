@@ -74,7 +74,7 @@ class _RecettePageState extends State<RecettePage> {
               ),
               const SizedBox(height: 5),
               Text(recette.description),
-               const SizedBox(height: 20),
+              const SizedBox(height: 20),
               const Text(
                 "Instructions :",
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -86,8 +86,8 @@ class _RecettePageState extends State<RecettePage> {
           actions: [
             TextButton(
               style: TextButton.styleFrom(
-                backgroundColor: Colors.red, // Couleur d'arrière-plan
-                foregroundColor: Colors.white, // Couleur du texte (optionnelle)
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
               ),
               child: const Text("Fermer"),
               onPressed: () {
@@ -152,6 +152,24 @@ class _RecettePageState extends State<RecettePage> {
                           ),
                           child: Row(
                             children: [
+                              IconButton(
+                                  icon: Icon(
+                                    recette.estFavori
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: recette.estFavori
+                                        ? Colors.red
+                                        : Colors.grey,
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      recette.estFavori =
+                                          !recette.estFavori; // Inverser l'état
+                                    });
+
+                                    // Sauvegarder l'état favori dans le service
+                                    _recetteService.sauvegarderFavori(recette);
+                                  }),
                               Expanded(
                                 flex: 2,
                                 child: Padding(

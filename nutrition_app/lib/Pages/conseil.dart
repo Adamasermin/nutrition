@@ -1,6 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrition_app/Services/conseil_serice.dart';
-import 'package:nutrition_app/Widgets/entete.dart';
 import 'package:nutrition_app/Models/conseil.dart';
 
 class ConseilPage extends StatefulWidget {
@@ -12,35 +12,57 @@ class ConseilPage extends StatefulWidget {
 
 class _ConseilPageState extends State<ConseilPage> {
   final ConseilService _conseilService = ConseilService();
+  User? userConnecte;
+
+  @override
+  void initState() {
+    super.initState();
+    // Récupérer l'utilisateur connecté
+    userConnecte = FirebaseAuth.instance.currentUser;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const Entete(title: 'Conseils'),
-      body: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: StreamBuilder<List<Conseil>>(
-          stream: _conseilService.getConseils(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Erreur : ${snapshot.error}'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Center(child: Text('Aucun conseil disponible'));
-            } else {
-              final conseils = snapshot.data!;
-              return ListView.builder(
-                itemCount: conseils.length,
-                itemBuilder: (context, index) {
-                  final conseil = conseils[index];
-                  return _buildRecommendationCard(conseil.titre, conseil.description);
+      body: Column(
+        children: [
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(left: 20, top: 50),
+            child: const Text(
+              'Conseils',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: StreamBuilder<List<Conseil>>(
+                // Vérifiez si userConnecte est nul avant d'accéder à uid
+                stream: userConnecte != null ? _conseilService.getConseilsByUserId(userConnecte!.uid) : Stream.value([]),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Erreur : ${snapshot.error}'));
+                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(child: Text('Aucun conseil disponible'));
+                  } else {
+                    final conseils = snapshot.data!;
+                    return ListView.builder(
+                      itemCount: conseils.length,
+                      itemBuilder: (context, index) {
+                        final conseil = conseils[index];
+                        return _buildRecommendationCard(conseil.titre, conseil.description);
+                      },
+                    );
+                  }
                 },
-              );
-            }
-          },
-        ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -70,21 +92,3 @@ class _ConseilPageState extends State<ConseilPage> {
     );
   }
 }
-
-
-Widget _buildRecommendationCard(String text) {
-    return Card(
-      color: Colors.grey.shade100,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Color(0xFFF7A73D)),
-            const SizedBox(width: 10),
-            Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
-          ],
-        ),
-      ),
-    );
-  }
