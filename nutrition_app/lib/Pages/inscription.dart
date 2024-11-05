@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrition_app/Services/firebase_auth_service.dart';
 import 'package:nutrition_app/Widgets/entete.dart';
@@ -12,22 +14,20 @@ class Inscription extends StatefulWidget {
 
 class _InscriptionState extends State<Inscription> {
   final FirebaseAuthService _auth = FirebaseAuthService();
-
   final TextEditingController _nomPrenomController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _motDePasseController = TextEditingController();
-  final TextEditingController _confirmerMotDePasseController =
-      TextEditingController(); // Nouveau contrôleur pour confirmer mot de passe
+  final TextEditingController _confirmerMotDePasseController = TextEditingController();
 
-  String? _erreurMessage; // Pour afficher un message d'erreur
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String? _erreurMessage;
 
   @override
   void dispose() {
     _nomPrenomController.dispose();
     _emailController.dispose();
     _motDePasseController.dispose();
-    _confirmerMotDePasseController
-        .dispose(); // Assurez-vous de libérer la mémoire
+    _confirmerMotDePasseController.dispose();
     super.dispose();
   }
 
@@ -37,45 +37,34 @@ class _InscriptionState extends State<Inscription> {
       backgroundColor: Colors.white,
       appBar: const Entete(title: 'Inscription'),
       body: SafeArea(
-        child: Container(
-          color: Colors.white, // Couleur de fond du formulaire
-          child: Column(
-            children: [
-              Expanded(
-                flex: 3,
-                child: SizedBox(
+        child: SingleChildScrollView(
+          child: Container(
+            color: Colors.white,
+            child: Column(
+              children: [
+                SizedBox(
                   width: double.infinity,
                   child: Column(
                     children: [
                       Image.asset(
                         'assets/images/Logo.png',
-                        height: 100,
-                        width: 100,
+                        height: 150,
+                        width: 150,
                       ),
                     ],
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 6,
-                child: Container(
+                Container(
+                  margin: const EdgeInsets.only(top: 50),
+                  height: MediaQuery.of(context).size.height * 0.5,
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   child: Column(
                     children: [
-                      inputFile(
-                          label: 'Nom et prénom',
-                          controller: _nomPrenomController),
+                      inputFile(label: 'Nom et prénom', controller: _nomPrenomController),
                       inputFile(label: 'Email', controller: _emailController),
-                      inputFile(
-                          label: 'Mot de passe',
-                          obscureText: true,
-                          controller: _motDePasseController),
-                      inputFile(
-                          label: 'Confirmer le mot de passe',
-                          obscureText: true,
-                          controller: _confirmerMotDePasseController),
-                      if (_erreurMessage !=
-                          null) // Afficher l'erreur si elle existe
+                      inputFile(label: 'Mot de passe', obscureText: true, controller: _motDePasseController),
+                      inputFile(label: 'Confirmer le mot de passe', obscureText: true, controller: _confirmerMotDePasseController),
+                      if (_erreurMessage != null)
                         Text(
                           _erreurMessage!,
                           style: const TextStyle(color: Colors.red),
@@ -83,15 +72,11 @@ class _InscriptionState extends State<Inscription> {
                     ],
                   ),
                 ),
-              ),
-              Expanded(
-                flex: 5,
-                child: Center(
+                Center(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width * 0.9,
                     child: ElevatedButton(
-                      onPressed:
-                          _inscription, // Correction: supprimer `=>` pour appeler la fonction directement
+                      onPressed: _inscription,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF7A73D),
                         foregroundColor: Colors.white,
@@ -99,46 +84,51 @@ class _InscriptionState extends State<Inscription> {
                           borderRadius: BorderRadius.circular(5),
                         ),
                       ),
-                      child: const Text(
-                        'Inscrivez-vous', // Texte du bouton
-                      ),
+                      child: const Text('Inscrivez-vous'),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _inscription() async {
-    // Récupération des valeurs des champs
-    String nomPrenom = _nomPrenomController.text; // Récupère le nom et prénom
+  Future<void> _inscription() async {
+    String nomPrenom = _nomPrenomController.text;
     String email = _emailController.text;
     String motDePasse = _motDePasseController.text;
     String confirmerMotDePasse = _confirmerMotDePasseController.text;
 
     setState(() {
-      _erreurMessage = null; // Réinitialiser l'erreur avant la validation
+      _erreurMessage = null;
     });
 
-    // Vérification si les mots de passe correspondent
     if (motDePasse != confirmerMotDePasse) {
       setState(() {
         _erreurMessage = "Les mots de passe ne correspondent pas.";
       });
-      return; // Sortir de la fonction si les mots de passe ne correspondent pas
+      return;
     }
 
-    // Vérification des champs obligatoires et création de l'utilisateur
     User? user = await _auth.creationParMail(email, motDePasse);
 
     if (user != null) {
-      // Mise à jour du profil de l'utilisateur avec le nom et prénom
       await user.updateProfile(displayName: nomPrenom);
-      await user.reload(); // Recharge les informations utilisateur
+      await user.reload();
+
+      // Récupérer le token FCM
+      String? fcmToken = await FirebaseMessaging.instance.getToken();
+
+      // Ajouter les informations de l'utilisateur à Firestore
+      await _firestore.collection('users').doc(user.uid).set({
+        'nomPrenom': nomPrenom,
+        'email': email,
+        'createdAt': Timestamp.now(),
+        'fcmToken': fcmToken, // Stocke le token FCM
+      });
 
       print('Utilisateur créé avec succès');
       Navigator.pushNamed(context, '/splash2');
@@ -159,15 +149,12 @@ Widget inputFile({label, obscureText = false, controller}) {
         style: const TextStyle(
             fontSize: 15, fontWeight: FontWeight.w400, color: Colors.black87),
       ),
-      const SizedBox(
-        height: 5,
-      ),
+      const SizedBox(height: 5),
       TextField(
         controller: controller,
         obscureText: obscureText,
         decoration: InputDecoration(
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
+          contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 10),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: Colors.grey.shade400),
           ),
@@ -175,9 +162,7 @@ Widget inputFile({label, obscureText = false, controller}) {
               borderSide: BorderSide(color: Colors.grey.shade400)),
         ),
       ),
-      const SizedBox(
-        height: 10,
-      )
+      const SizedBox(height: 10)
     ],
   );
 }

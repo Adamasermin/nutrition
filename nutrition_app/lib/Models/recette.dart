@@ -4,6 +4,7 @@ class Recette {
   String titre;
   String description;
   String ingredients;
+  String instructions;
   String photo;
 
   Recette({
@@ -11,6 +12,7 @@ class Recette {
     required this.titre,
     required this.description,
     required this.ingredients,
+    required this.instructions,
     required this.photo,
   });
 
@@ -31,7 +33,8 @@ class Recette {
       titre: map['titre'],
       description: map['description'],
       ingredients: map['ingredients'],
-      photo: map['photo'],
+      instructions: map['instructions'],
+      photo: map['photo'], 
     );
 }
 

@@ -1,9 +1,10 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:nutrition_app/Models/enfant.dart';
 import 'package:nutrition_app/Services/enfant_service.dart';
 
-// ignore: camel_case_types, must_be_immutable
 class Inscription_enfant extends StatefulWidget {
   const Inscription_enfant({super.key});
 
@@ -12,18 +13,29 @@ class Inscription_enfant extends StatefulWidget {
 }
 
 class _Inscription_enfantState extends State<Inscription_enfant> {
-  // Contrôleurs pour les champs du formulaire
   final TextEditingController _nomPrenomController = TextEditingController();
-  final TextEditingController _dateNaissanceController = TextEditingController();
+  final TextEditingController _dateNaissanceController =
+      TextEditingController();
   final TextEditingController _poidsController = TextEditingController();
   final TextEditingController _tailleController = TextEditingController();
-
-  // Instance du service EnfantService
   final EnfantService _enfantService = EnfantService();
 
-  // Fonction pour ajouter l'enfant dans Firestore via EnfantService
+  File? _imageFile;
+
+  // Fonction pour sélectionner une image
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? pickedFile =
+        await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _imageFile = File(pickedFile.path);
+      });
+    }
+  }
+
   Future<void> ajouterEnfant() async {
-    // Récupérer l'utilisateur connecté
     User? utilisateurConnecte = FirebaseAuth.instance.currentUser;
 
     if (utilisateurConnecte == null) {
@@ -38,40 +50,34 @@ class _Inscription_enfantState extends State<Inscription_enfant> {
         _poidsController.text.isNotEmpty &&
         _tailleController.text.isNotEmpty) {
       try {
-        // Convertir les valeurs du poids et de la taille
         double poids = double.parse(_poidsController.text);
-        double taille = double.parse(_tailleController.text) / 100; // Convertir en mètres
+        double taille = double.parse(_tailleController.text) / 100;
 
-        // Calculer l'IMC
         double imc = poids / (taille * taille);
 
-        // Créer l'objet Enfant avec l'IMC calculé
         Enfant enfant = Enfant(
           nomPrenom: _nomPrenomController.text,
           dateDeNaissance: DateTime.parse(_dateNaissanceController.text),
-          age: DateTime.now().year - DateTime.parse(_dateNaissanceController.text).year,
+          age: DateTime.now().year -
+              DateTime.parse(_dateNaissanceController.text).year,
           poids: poids,
-          taille: taille * 100, // Convertir à nouveau en centimètres
+          taille: taille * 100,
           imc: imc,
-          userId: utilisateurConnecte.uid, // Ajouter l'ID de l'utilisateur ici
+          userId: utilisateurConnecte.uid,
         );
 
-        // Appeler le service pour ajouter l'enfant
         await _enfantService.ajouterEnfant(enfant);
 
-        // Afficher un message de succès
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Données de l’enfant ajoutées avec succès')),
         );
 
-        // Réinitialiser le formulaire
         _nomPrenomController.clear();
         _dateNaissanceController.clear();
         _poidsController.clear();
         _tailleController.clear();
 
-        // Rediriger vers la page d'accueil
         Navigator.pushReplacementNamed(context, '/accueil');
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -88,6 +94,7 @@ class _Inscription_enfantState extends State<Inscription_enfant> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         leading: IconButton(
@@ -99,62 +106,117 @@ class _Inscription_enfantState extends State<Inscription_enfant> {
             )),
       ),
       body: SafeArea(
-        child: Container(
-          padding: const EdgeInsets.only(top: 20),
-          color: Colors.white,
+        child: SingleChildScrollView(
           child: Column(
             children: [
-              const Expanded(
-                flex: 2,
-                child: SizedBox(
-                  width: double.infinity,
-                  child: Column(
-                    children: [
-                      Text(
-                        'Entrez les données de l’enfant',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFFF7A73D),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 7,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  child: Column(
-                    children: [
-                      inputFile(
-                          label: 'Nom et Prenom',
-                          controller: _nomPrenomController),
-                      inputFile(
-                          label: 'Date de naissance (YYYY-MM-DD)',
-                          controller: _dateNaissanceController),
-                      inputFile(label: 'Poids', controller: _poidsController),
-                      inputFile(label: 'Taille', controller: _tailleController),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                flex: 2,
+              SizedBox(
+                height: 70,
                 child: Center(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF7A73D),
-                      foregroundColor: Colors.white,
-                      minimumSize: const Size(300.0, 50.0),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(5),
-                      ),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    child: Image.asset(
+                      'assets/images/Logo.png',
+                      height: 100,
+                      width: 100,
                     ),
-                    onPressed: ajouterEnfant,
-                    child: const Text('Validez'),
                   ),
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                height: MediaQuery.of(context).size.height * 0.1,
+                child: const Center(
+                  child: Text(
+                    'Entrez les données de l’enfant',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFF7A73D),
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                margin: const EdgeInsets.only(bottom: 30),
+                child: Column(
+                  children: [
+                    inputFile(
+                        label: 'Nom et Prenom',
+                        controller: _nomPrenomController),
+                    inputFile(
+                        label: 'Date de naissance (YYYY-MM-DD)',
+                        controller: _dateNaissanceController),
+                    inputFile(label: 'Poids', controller: _poidsController),
+                    inputFile(label: 'Taille', controller: _tailleController),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _imageFile == null
+                              ? 'Image (optionnel)'
+                              : 'Image sélectionnée',
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w400,
+                              color: Colors.black87),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              GestureDetector(
+                                onTap: _pickImage,
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    border:
+                                        Border.all(color: Colors.grey.shade400),
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.cloud_upload,
+                                          color: Color(0xFFF7A73D)),
+                                      SizedBox(width: 5),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      const Color(0xFFF7A73D), // Couleur orange
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 15, vertical: 12),
+                                  foregroundColor: Colors.white,
+                                ),
+                                onPressed: _pickImage,
+                                child: const Text('Importer image'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF7A73D),
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(300.0, 50.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                  ),
+                  onPressed: ajouterEnfant,
+                  child: const Text('Validez'),
                 ),
               ),
             ],
@@ -174,9 +236,7 @@ Widget inputFile({label, obscureText = false, controller}) {
         style: const TextStyle(
             fontSize: 18, fontWeight: FontWeight.w400, color: Colors.black87),
       ),
-      const SizedBox(
-        height: 5,
-      ),
+      const SizedBox(height: 5),
       TextField(
         controller: controller,
         obscureText: obscureText,
@@ -189,9 +249,7 @@ Widget inputFile({label, obscureText = false, controller}) {
             border: OutlineInputBorder(
                 borderSide: BorderSide(color: Colors.grey.shade400))),
       ),
-      const SizedBox(
-        height: 10,
-      )
+      const SizedBox(height: 10),
     ],
   );
 }

@@ -7,25 +7,30 @@ import 'package:nutrition_app/Pages/Accueil/Graphes/donneeBar.dart';
 // Définition de la classe Mongraph, qui représente un graphique à barres.
 class Mongraph extends StatelessWidget {
 
-  final List donneHebdomadaire; // Liste contenant les données hebdomadaires pour le graphique.
+  final List mois; // Liste contenant les données hebdomadaires pour le graphique.
 
   // Constructeur de la classe Mongraph, qui nécessite une liste de données hebdomadaires.
   const Mongraph({
     super.key, // Utilisation de super.key pour la gestion des clés dans Flutter
-    required this.donneHebdomadaire, // Le paramètre donneHebdomadaire est requis lors de la création d'une instance.
+    required this.mois, // Le paramètre donneHebdomadaire est requis lors de la création d'une instance.
   });
   
   @override
   Widget build(BuildContext context) {
     // Création d'une instance de Donneebar avec les données hebdomadaires fournies.
     Donneebar donneebar = Donneebar(
-      lun: donneHebdomadaire[0], // Lundi
-      mar: donneHebdomadaire[1], // Mardi
-      mer: donneHebdomadaire[2], // Mercredi
-      jeu: donneHebdomadaire[3], // Jeudi
-      ven: donneHebdomadaire[4], // Vendredi
-      sam: donneHebdomadaire[5], // Samedi
-      dim: donneHebdomadaire[6]  // Dimanche
+      jan: mois[0], 
+      fev: mois[1], 
+      mars: mois[2], 
+      avr: mois[3],
+      mai: mois[4], 
+      jun: mois[5], 
+      jui: mois[6],
+      aout: mois[7],
+      sep: mois[8],
+      oct: mois[9],
+      nov: mois[10],
+      dec: mois[11],
     );
 
     // Initialisation des données pour le graphique.
@@ -51,7 +56,7 @@ class Mongraph extends StatelessWidget {
             x: data.x, // Position X de la barre
             barRods: [
               BarChartRodData(
-                toY: data.y, // Hauteur de la barre
+                toY: data.y ?? 0,
                 color: Colors.black, // Couleur de la barre
                 width: 15, // Largeur de la barre
                 borderRadius: BorderRadius.circular(5), // Arrondi des coins de la barre
@@ -81,25 +86,40 @@ Widget jourSemaine(double value, TitleMeta titre) {
   // Détermine le texte à afficher en fonction de la valeur (jour de la semaine).
   switch (value.toInt()) {
     case 0:
-      text = const Text('L', style: style,); // Lundi
+      text = const Text('J', style: style,); 
       break;
     case 1:
-      text = const Text('M', style: style,); // Mardi
+      text = const Text('F', style: style,);
       break;
     case 2:
-      text = const Text('M', style: style,); // Mercredi
+      text = const Text('M', style: style,); 
       break;
     case 3:
-      text = const Text('J', style: style,); // Jeudi
+      text = const Text('A', style: style,); 
       break;
     case 4:
-      text = const Text('V', style: style,); // Vendredi
+      text = const Text('M', style: style,); 
       break;
     case 5:
-      text = const Text('S', style: style,); // Samedi
+      text = const Text('J', style: style,);
       break;
     case 6:
-      text = const Text('D', style: style,); // Dimanche
+      text = const Text('J', style: style,);
+      break;
+    case 7:
+      text = const Text('A', style: style,);
+      break;
+    case 8:
+      text = const Text('S', style: style,);
+      break;
+    case 9:
+      text = const Text('O', style: style,);
+      break;
+    case 10:
+      text = const Text('N', style: style,);
+      break;
+    case 11:
+      text = const Text('D', style: style,);
       break;
     default:
       text = const Text('', style: style,); // Si aucune correspondance, affiche un texte vide

@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:nutrition_app/Services/enfant_service.dart';
 import 'package:nutrition_app/Models/enfant.dart';
-import 'package:nutrition_app/Pages/Accueil/accueil.dart';
+import 'package:nutrition_app/Widgets/bar_de_navigation.dart';
 
 class EnfantPage extends StatefulWidget {
   const EnfantPage({super.key});
@@ -44,8 +44,9 @@ class _EnfantPageState extends State<EnfantPage> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
           Expanded(
-            child: FutureBuilder<List<Enfant>>(
-              future: _enfantService.recupererEnfantsPourUtilisateur(),
+            child: StreamBuilder<List<Enfant>>(
+              stream: _enfantService.recupererEnfantsPourUtilisateur(),
+              // future: _enfantService.recupererEnfantsPourUtilisateur(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -67,7 +68,10 @@ class _EnfantPageState extends State<EnfantPage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => Accueil(enfantId: enfant.id!),
+                            builder: (context) => BarDeNavigation(
+                              enfantSelectionne:
+                                  enfant, // Passer l'objet enfant ici
+                            ),
                           ),
                         );
                       },
@@ -93,7 +97,8 @@ class _EnfantPageState extends State<EnfantPage> {
                                 icon:
                                     const Icon(Icons.delete, color: Colors.red),
                                 onPressed: () {
-                                  _enfantService.supprimerEnfant(enfant.id!);
+                                  _afficherPopupConfirmationSuppression(
+                                      context, enfant.id!);
                                 },
                               ),
                             ],
@@ -119,11 +124,52 @@ class _EnfantPageState extends State<EnfantPage> {
     );
   }
 
+  // Fonction pour afficher le popup de confirmation de suppression
+  void _afficherPopupConfirmationSuppression(
+      BuildContext context, String enfantId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmer la suppression'),
+          content: const Text('Voulez-vous vraiment supprimer cet enfant ?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(foregroundColor: Colors.grey),
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _supprimerEnfant(
+                    context, enfantId); // Appelle la fonction de suppression
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, foregroundColor: Colors.white),
+              child: const Text('Supprimer'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+// Fonction pour supprimer l'enfant et gérer la fermeture du popup
+  void _supprimerEnfant(BuildContext context, String enfantId) {
+    _enfantService.supprimerEnfant(enfantId).then((_) {
+      Navigator.pop(context); // Fermer le popup de confirmation
+    }).catchError((error) {
+      print('Erreur lors de la suppression : $error');
+    });
+  }
+
   void _afficherPopupAjoutEnfant(BuildContext context, {Enfant? enfant}) {
     bool estModification = enfant != null;
 
-    final TextEditingController _nomPrenomController = TextEditingController(text: estModification ? enfant.nomPrenom : '');
-    final TextEditingController _dateDeNaissanceController =TextEditingController(
+    final TextEditingController _nomPrenomController =
+        TextEditingController(text: estModification ? enfant.nomPrenom : '');
+    final TextEditingController _dateDeNaissanceController =
+        TextEditingController(
             text: estModification
                 ? enfant.dateDeNaissance.toIso8601String().substring(0, 10)
                 : '');
@@ -165,6 +211,7 @@ class _EnfantPageState extends State<EnfantPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
+              style: TextButton.styleFrom(foregroundColor: Colors.orange),
               child: const Text('Annuler'),
             ),
             ElevatedButton(
@@ -206,6 +253,10 @@ class _EnfantPageState extends State<EnfantPage> {
                   });
                 }
               },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+              ),
               child: Text(estModification ? 'Modifier' : 'Enregistrer'),
             ),
           ],

@@ -14,13 +14,12 @@ class Entete extends StatelessWidget implements PreferredSizeWidget{
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
-      
       title: Text(
         title,
         style: const TextStyle(color: Colors.black), // Optionnel, pour un meilleur contraste avec un AppBar blanc
       ),
       centerTitle: true,
-      elevation: 0, // Ajoute l'effet shadow
+      elevation: 1, // Ajoute l'effet shadow
       shadowColor: Colors.white, // Couleur de l'ombre*
       
       leading: IconButton(
